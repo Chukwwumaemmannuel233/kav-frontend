@@ -5,10 +5,15 @@ import { CartProvider } from "@/lib/cart-context"
 import { LoadingProvider } from "@/lib/loading-context"
 import { InitialLoadingScreen } from "./components/initial-loading-screen"
 import { NavigationProgress } from "./components/navigation-progress"
+import { Toaster } from "sonner";
+
+
+
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
+
 
 export const metadata: Metadata = {
   title: "FABRIC. - Woven with Intention",
@@ -46,6 +51,7 @@ export default function RootLayout({
           <CartProvider>
             <InitialLoadingScreen />
             <NavigationProgress />
+            <Toaster richColors position="top-right" />
             {children}
           </CartProvider>
         </LoadingProvider>

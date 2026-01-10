@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-import { useRouter } from "next/navigation"; // ✅ ADD THIS
+import { useRouter } from "next/navigation"; //
+import { signup } from "@/lib/auth.api";
+import { toast } from "sonner";
 
 export default function SignUpPage() {
   const router = useRouter(); // ✅ INITIALIZE ROUTER
@@ -19,13 +21,25 @@ export default function SignUpPage() {
     e.preventDefault();
     setIsSignUp(true);
 
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const data = await signup({
+        name,
+        email,
+        password,
+      });
 
-    console.log("Login attempt:", { name, email, password });
+      // If backend returns token
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      toast.success("Account created successfully", { duration: 1500 });
 
-    // Redirect after login
-    router.push("/pages/user/dashboard");
+      router.push("/pages/user/dashboard");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Signup failed", { duration: 1500 });
+    } finally {
+      setIsSignUp(false);
+    }
   };
 
   return (
@@ -46,6 +60,8 @@ export default function SignUpPage() {
               type="text"
               id="name"
               placeholder="Your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none placeholder:text-neutral-400"
             />
           </div>
@@ -59,6 +75,8 @@ export default function SignUpPage() {
               type="email"
               id="email"
               placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none placeholder:text-neutral-400"
             />
           </div>
@@ -76,6 +94,8 @@ export default function SignUpPage() {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 border border-neutral-300 rounded-lg pr-10 focus:outline-none placeholder:text-neutral-400"
               />
               <button
@@ -127,7 +147,7 @@ export default function SignUpPage() {
           <p className="text-center text-sm text-neutral-600 mt-4">
             Already have an account?{" "}
             <Link
-              href="/pages/login"
+              href="/pages/auth/login"
               className="text-black font-semibold hover:opacity-70"
             >
               Log In

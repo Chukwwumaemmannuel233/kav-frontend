@@ -7,6 +7,7 @@ import { Edit, Trash2, MapPin, X } from "lucide-react"
 interface Address {
   id: string
   name: string
+  phone: number
   street: string
   city: string
   state: string
@@ -20,6 +21,7 @@ export default function SavedAddressesPage() {
     {
       id: "1",
       name: "John Doe",
+      phone: +2348172846347,
       street: "123 Fabric Lane, Apt 4B",
       city: "Weaverville",
       state: "CA",
@@ -30,6 +32,7 @@ export default function SavedAddressesPage() {
     {
       id: "2",
       name: "Jane Smith",
+      phone: +12347596940,
       street: "456 Silk Road, Suite 100",
       city: "Spoolsville",
       state: "TX",
@@ -207,6 +210,19 @@ export default function SavedAddressesPage() {
 
               <div className="space-y-2">
                 <label htmlFor="street" className="block text-sm font-medium text-neutral-700">
+                 Phone Number
+                </label>
+                <input
+                  id="Phone"
+                  type="text"
+                  placeholder="+234"
+                  defaultValue={editingAddress?.phone}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="street" className="block text-sm font-medium text-neutral-700">
                   Street Address
                 </label>
                 <input
@@ -217,6 +233,7 @@ export default function SavedAddressesPage() {
                   className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
+              
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

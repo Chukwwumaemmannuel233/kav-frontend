@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Button } from "../../../components/ui/button";
 import { useRouter } from "next/navigation"; // ✅ ADD THIS
 import { Eye, EyeOff } from "lucide-react";
+import { login } from "@/lib/auth.api";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter(); // ✅ INITIALIZE ROUTER
@@ -16,17 +18,29 @@ export default function LoginPage() {
   const [isLogginIn, setIsLogginIn] = useState(false)
 
  const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setIsLogginIn(true);
- 
-     // Simulate processing
-     await new Promise((resolve) => setTimeout(resolve, 800));
- 
-     console.log("Login attempt:", { email, password });
- 
-     // Redirect after login
-     router.push("/pages/user/dashboard");
-   };
+  e.preventDefault();
+  setIsLogginIn(true);
+
+  try {
+    const data = await login({ email, password });
+
+    // Save token
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+
+    // Optional: save user info
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+     toast.success("Login successful", { duration: 1500 });
+    router.push("/pages/user/dashboard");
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || "Invalid email or password", { duration: 1500 });
+  } finally {
+    setIsLogginIn(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4 py-8">

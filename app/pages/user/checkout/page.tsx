@@ -1,262 +1,180 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "../../../components/ui/button";
-import { Lock, CreditCard, HelpCircle } from "lucide-react";
+import { Lock } from "lucide-react";
+
+type Address = {
+  id: number;
+  full_name: string;
+  phone: string;
+  address_line: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  country: string;
+};
 
 export default function CheckoutPage() {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
-  const [sameAsShipping, setSameAsShipping] = useState(true);
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [cardholderName, setCardholderName] = useState("");
-  const router = useRouter();
+  const [address, setAddress] = useState<Address | null>(null);
+  const [loadingAddress, setLoadingAddress] = useState(true);
+  const [loadingPayment, setLoadingPayment] = useState(false);
 
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\s/g, "");
-    if (value.length > 16) value = value.slice(0, 16);
-    const formatted = value.match(/.{1,4}/g)?.join(" ") || value;
-    setCardNumber(formatted);
-  };
+  // Fetch default address
+  useEffect(() => {
+    const fetchDefaultAddress = async () => {
+      try {
+        const res = await fetch("/api/addresses/default", {
+          credentials: "include",
+        });
 
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length >= 2) {
-      value = value.slice(0, 2) + " / " + value.slice(2, 4);
+        if (res.ok) {
+          const data = await res.json();
+          setAddress(data.address || null);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingAddress(false);
+      }
+    };
+
+    fetchDefaultAddress();
+  }, []);
+
+  // Paystack redirect
+  const handlePay = async () => {
+    try {
+      setLoadingPayment(true);
+
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      window.location.href = data.authorization_url;
+    } catch (error) {
+      console.error(error);
+      setLoadingPayment(false);
     }
-    setExpiryDate(value);
-  };
-
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 3);
-    setCvv(value);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSignUp(true);
-
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    router.push("/pages/user/checkout/processing");
   };
 
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-neutral-200 px-6 py-4">
+      <header className="border-b px-6 py-4">
         <div className="flex items-center gap-2">
           <Lock size={20} />
-          <h1 className="text-xl font-semibold">FabricFlow Secure Checkout</h1>
+          <h1 className="text-xl font-semibold">Secure Checkout</h1>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 lg:py-12">
-        {/* Progress Steps */}
-        <div className="flex items-center gap-2 text-sm mb-8">
-          <Link
-            href="/pages/checkout/shipping"
-            className="text-neutral-500 hover:text-neutral-900"
-          >
-            Shipping
-          </Link>
-          <span className="text-neutral-400">/</span>
-          <span className="font-semibold text-neutral-900">Payment</span>
-          <span className="text-neutral-400">/</span>
-          <span className="text-neutral-500">Confirmation</span>
+      <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-3 gap-10">
+        {/* LEFT */}
+        <div className="lg:col-span-2 space-y-8">
+          <h2 className="text-3xl font-bold">Checkout</h2>
+
+          {/* ADDRESS SECTION */}
+          {loadingAddress ? (
+            <p>Loading address...</p>
+          ) : address ? (
+            <div className="border rounded-lg p-5 bg-neutral-50">
+              <h3 className="font-semibold mb-2">Delivery Address</h3>
+              <p className="text-sm text-neutral-700 leading-relaxed">
+                {address.full_name} <br />
+                {address.address_line} <br />
+                {address.city}, {address.state} <br />
+                {address.zip_code}, {address.country} <br />
+                {address.phone}
+              </p>
+
+              <Link
+                href="/pages/user/address"
+                className="text-sm text-blue-600 mt-3 inline-block"
+              >
+                Change address
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold">Add Delivery Address</h3>
+
+              <input className="input" placeholder="Full Name" />
+              <input className="input" placeholder="Phone Number" />
+              <input className="input" placeholder="Street Address" />
+
+              <div className="grid grid-cols-2 gap-4">
+                <input className="input" placeholder="City" />
+                <input className="input" placeholder="State" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <input className="input" placeholder="Zip Code" />
+                <input className="input" placeholder="Country" />
+              </div>
+
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" />
+                Save as default address
+              </label>
+            </div>
+          )}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
-          {/* Left: Payment Form */}
-          <div className="lg:col-span-2">
-            <h2 className="text-3xl font-bold mb-8">Payment Details</h2>
+        {/* RIGHT */}
+        <div className="lg:col-span-1">
+          <div className="border rounded-lg p-6 sticky top-8">
+            <h3 className="text-2xl font-bold mb-6">Order Summary</h3>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Payment Method Tabs */}
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  className={`flex-1 py-3 px-4 rounded-lg border-2 transition ${
-                    paymentMethod === "card"
-                      ? "border-neutral-900 bg-white"
-                      : "border-neutral-200 bg-neutral-100 text-neutral-600"
-                  }`}
-                >
-                  Credit / Debit Card
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("paypal")}
-                  className={`flex-1 py-3 px-4 rounded-lg border-2 transition ${
-                    paymentMethod === "paypal"
-                      ? "border-neutral-900 bg-white"
-                      : "border-neutral-200 bg-neutral-100 text-neutral-600"
-                  }`}
-                >
-                  PayPal
-                </button>
+            <div className="space-y-3 mb-5 text-sm">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>₦120.00</span>
               </div>
-
-              {paymentMethod === "card" && (
-                <>
-                  {/* Card Number */}
-                  <div>
-                    <label
-                      htmlFor="cardNumber"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      Card Number
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        id="cardNumber"
-                        value={cardNumber}
-                        onChange={handleCardNumberChange}
-                        placeholder="0000 0000 0000 0000"
-                        className="w-full px-4 py-3 bg-neutral-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900"
-                      />
-                      <CreditCard
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                        size={20}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Expiry and CVV */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        htmlFor="expiryDate"
-                        className="block text-sm font-medium mb-2"
-                      >
-                        Expiry Date
-                      </label>
-                      <input
-                        type="text"
-                        id="expiryDate"
-                        value={expiryDate}
-                        onChange={handleExpiryChange}
-                        placeholder="MM / YY"
-                        className="w-full px-4 py-3 bg-neutral-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="cvv"
-                        className="flex items-center gap-1 text-sm font-medium mb-2"
-                      >
-                        CVV
-                        <HelpCircle size={14} className="text-neutral-400" />
-                      </label>
-                      <input
-                        type="text"
-                        id="cvv"
-                        value={cvv}
-                        onChange={handleCvvChange}
-                        placeholder="123"
-                        className="w-full px-4 py-3 bg-neutral-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Cardholder Name */}
-                  <div>
-                    <label
-                      htmlFor="cardholderName"
-                      className="block text-sm font-medium mb-2"
-                    >
-                      Cardholder Name
-                    </label>
-                    <input
-                      type="text"
-                      id="cardholderName"
-                      value={cardholderName}
-                      onChange={(e) => setCardholderName(e.target.value)}
-                      placeholder="Name as it appears on card"
-                      className="w-full px-4 py-3 bg-neutral-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900"
-                    />
-                  </div>
-                </>
-              )}
-
-              {paymentMethod === "paypal" && (
-                <div className="py-12 text-center bg-neutral-50 rounded-lg">
-                  <p className="text-neutral-600">
-                    You will be redirected to PayPal to complete your payment.
-                  </p>
-                </div>
-              )}
-
-              {/* Billing Address */}
-              <div className="pt-6">
-                <h3 className="text-xl font-bold mb-4">Billing Address</h3>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={sameAsShipping}
-                    onChange={(e) => setSameAsShipping(e.target.checked)}
-                    className="w-5 h-5 rounded border-neutral-300 text-neutral-900 focus:ring-2 focus:ring-neutral-900"
-                  />
-                  <span className="text-sm">
-                    Billing address is same as shipping
-                  </span>
-                </label>
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span>₦10.00</span>
               </div>
-            </form>
-          </div>
-
-          {/* Right: Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="border border-neutral-200 rounded-lg p-6 sticky top-8">
-              <h3 className="text-2xl font-bold mb-6">Order Summary</h3>
-
-              <div className="space-y-4 mb-6">
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600">Subtotal</span>
-                  <span className="font-medium">$120.00</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600">Shipping</span>
-                  <span className="font-medium">$10.00</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600">Taxes</span>
-                  <span className="font-medium">$9.60</span>
-                </div>
+              <div className="flex justify-between">
+                <span>Taxes</span>
+                <span>₦9.60</span>
               </div>
+            </div>
 
-              <div className="border-t border-neutral-200 pt-4 mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold">Total</span>
-                  <span className="text-2xl font-bold">$139.60</span>
-                </div>
-              </div>
+            <div className="border-t pt-4 mb-6 flex justify-between font-bold">
+              <span>Total</span>
+              <span>₦139.60</span>
+            </div>
 
-              <Button
-                onClick={handleSubmit}
-                isLoading={isSignUp}
-                loadingText="Pay $139.60..."
-                className="w-full bg-black text-white py-4 rounded-lg font-semibold hover:bg-neutral-900 transition mb-4"
-              >
-                Pay $139.60
-              </Button>
+            <Button
+              onClick={handlePay}
+              isLoading={loadingPayment}
+              loadingText="Redirecting..."
+              className="w-full bg-black text-white py-4 rounded-lg font-semibold"
+            >
+              Pay ₦139.60
+            </Button>
 
-              <div className="flex items-center justify-center gap-2 text-xs text-neutral-500">
-                <Lock size={14} />
-                <span>SSL Encrypted Payment</span>
-              </div>
+            <div className="flex justify-center items-center gap-2 text-xs text-neutral-500 mt-4">
+              <Lock size={14} />
+              <span>SSL Encrypted Payment</span>
             </div>
           </div>
         </div>
       </div>
+
+      {/* INPUT STYLE */}
+      <style jsx>{`
+        .input {
+          width: 100%;
+          padding: 12px 14px;
+          border-radius: 8px;
+          background: #f5f5f5;
+          outline: none;
+        }
+      `}</style>
     </div>
   );
 }
