@@ -1,6 +1,6 @@
 "use client"
 
-import SiteHeader from "../components/site-header"
+import SiteHeader from "../../../components/site-header"
 import Link from "next/link"
 
 export default function TermsOfUsePage() {

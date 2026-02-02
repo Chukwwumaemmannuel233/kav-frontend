@@ -34,7 +34,7 @@ export default function SignUpPage() {
       }
       toast.success("Account created successfully", { duration: 1500 });
 
-      router.push("/pages/user/dashboard");
+      router.push("/pages/user/onboarding");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Signup failed", { duration: 1500 });
     } finally {

@@ -1,69 +1,187 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Button } from "../../../components/ui/button";
 import { Lock } from "lucide-react";
+import { useCart } from "../../../../lib/cart-context";
+import { toast } from "sonner";
+
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type Address = {
   id: number;
   full_name: string;
   phone: string;
-  address_line: string;
+  street_address: string;
   city: string;
   state: string;
-  zip_code: string;
+  postal_code: string;
   country: string;
+  is_default: boolean;
 };
 
 export default function CheckoutPage() {
+  const { items: cartItems } = useCart();
+
   const [address, setAddress] = useState<Address | null>(null);
   const [loadingAddress, setLoadingAddress] = useState(true);
+  const [showAddressForm, setShowAddressForm] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
+  const [uiError, setUiError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    full_name: "",
+    phone: "",
+    street_address: "",
+    city: "",
+    state: "",
+    postal_code: "",
+    country: "",
+    is_default: true,
+  });
 
-  // Fetch default address
   useEffect(() => {
-    const fetchDefaultAddress = async () => {
+    if (uiError) {
+      const timer = setTimeout(() => {
+        setUiError(null);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [uiError]);
+
+  /* ---------------- FETCH ADDRESSES ---------------- */
+  useEffect(() => {
+    const fetchAddresses = async () => {
       try {
-        const res = await fetch("/api/addresses/default", {
-          credentials: "include",
+        const res = await fetch(`${API_BASE}/addresses`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          setAddress(data.address || null);
+        const data = await res.json();
+
+        if (data.addresses?.length) {
+          const defaultAddress =
+            data.addresses.find((a: Address) => a.is_default) ||
+            data.addresses[0];
+
+          setAddress(defaultAddress);
+          setShowAddressForm(false);
+        } else {
+          setShowAddressForm(true);
         }
-      } catch (error) {
-        console.error(error);
+      } catch {
+        setShowAddressForm(true);
       } finally {
         setLoadingAddress(false);
       }
     };
 
-    fetchDefaultAddress();
+    fetchAddresses();
   }, []);
 
-  // Paystack redirect
-  const handlePay = async () => {
-    try {
-      setLoadingPayment(true);
+  /* ---------------- Save Address ---------------- */
 
-      const res = await fetch("/api/paystack/initialize", {
+  const saveAddress = async () => {
+    try {
+      if (!formData.full_name || !formData.phone || !formData.street_address) {
+        setUiError("Please fill all required address fields");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/addresses`, {
         method: "POST",
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
-      window.location.href = data.authorization_url;
-    } catch (error) {
-      console.error(error);
-      setLoadingPayment(false);
+      if (!res.ok) throw new Error(data.message);
+
+      setAddress(data.address); // 🔥 THIS FIXES PAY ISSUE
+      setShowAddressForm(false);
+      setUiError(null);
+    } catch (err: any) {
+      setUiError(err.message || "Failed to save address");
     }
   };
 
+  /* ---------------- CALCULATIONS ---------------- */
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  // const shipping = cartItems.length ? 1500 : 0;
+  // const tax = subtotal * 0.075;
+  const total = subtotal;
+
+  /* ---------------- PAYSTACK ---------------- */
+  const handlePay = async () => {
+  if (!address) return toast.error("Add delivery address");
+
+  try {
+    setLoadingPayment(true);
+
+    // 1️⃣ Create order
+   const checkoutRes = await fetch(`${API_BASE}/checkout`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+  body: JSON.stringify({
+    address_id: address.id,
+
+    // ✅ ADD THIS
+    items: cartItems.map(item => ({
+      product_id: item.productId,
+      variant_id: item.variantId,
+      name: item.name,
+      variant_type: item.variantType,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.image,
+    })),
+  }),
+});
+
+
+    const checkoutData = await checkoutRes.json();
+    if (!checkoutRes.ok) throw new Error(checkoutData.message);
+
+    // 2️⃣ Init Paystack
+    const payRes = await fetch(`${API_BASE}/payments/init`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        order_id: checkoutData.order.id,
+      }),
+    });
+
+    const payData = await payRes.json();
+    if (!payRes.ok) throw new Error(payData.message);
+
+    // 3️⃣ Redirect to Paystack
+    window.location.href = payData.authorization_url;
+
+  } catch (err: any) {
+    toast.error(err.message || "Payment failed");
+  } finally {
+    setLoadingPayment(false);
+  }
+};
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <header className="border-b px-6 py-4">
         <div className="flex items-center gap-2">
           <Lock size={20} />
@@ -76,52 +194,126 @@ export default function CheckoutPage() {
         <div className="lg:col-span-2 space-y-8">
           <h2 className="text-3xl font-bold">Checkout</h2>
 
-          {/* ADDRESS SECTION */}
           {loadingAddress ? (
-            <p>Loading address...</p>
-          ) : address ? (
+            <div className="border rounded-lg p-5 bg-neutral-50 space-y-3 animate-pulse">
+              <div className="h-4 bg-neutral-300 rounded w-1/2" />
+              <div className="h-3 bg-neutral-300 rounded w-3/4" />
+              <div className="h-3 bg-neutral-300 rounded w-2/3" />
+              <div className="h-3 bg-neutral-300 rounded w-1/3" />
+            </div>
+          ) : address && !showAddressForm ? (
             <div className="border rounded-lg p-5 bg-neutral-50">
               <h3 className="font-semibold mb-2">Delivery Address</h3>
               <p className="text-sm text-neutral-700 leading-relaxed">
                 {address.full_name} <br />
-                {address.address_line} <br />
+                {address.street_address} <br />
                 {address.city}, {address.state} <br />
-                {address.zip_code}, {address.country} <br />
+                {address.postal_code}, {address.country} <br />
                 {address.phone}
               </p>
 
-              <Link
-                href="/pages/user/address"
+              <button
+                onClick={() => setShowAddressForm(true)}
                 className="text-sm text-blue-600 mt-3 inline-block"
               >
                 Change address
-              </Link>
+              </button>
             </div>
           ) : (
+            /* 🔥 YOUR FORM UI — RESTORED */
             <div className="space-y-4">
               <h3 className="text-xl font-bold">Add Delivery Address</h3>
 
-              <input className="input" placeholder="Full Name" />
-              <input className="input" placeholder="Phone Number" />
-              <input className="input" placeholder="Street Address" />
+              <input
+                className="input"
+                placeholder="Full Name"
+                value={formData.full_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, full_name: e.target.value })
+                }
+              />
+
+              <input
+                className="input"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+              />
+
+              <input
+                className="input"
+                placeholder="Street Address"
+                value={formData.street_address}
+                onChange={(e) =>
+                  setFormData({ ...formData, street_address: e.target.value })
+                }
+              />
 
               <div className="grid grid-cols-2 gap-4">
-                <input className="input" placeholder="City" />
-                <input className="input" placeholder="State" />
+                <input
+                  className="input"
+                  placeholder="City"
+                  value={formData.city}
+                  onChange={(e) =>
+                    setFormData({ ...formData, city: e.target.value })
+                  }
+                />
+
+                <input
+                  className="input"
+                  placeholder="State"
+                  value={formData.state}
+                  onChange={(e) =>
+                    setFormData({ ...formData, state: e.target.value })
+                  }
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <input className="input" placeholder="Zip Code" />
-                <input className="input" placeholder="Country" />
+                <input
+                  className="input"
+                  placeholder="Postal Code"
+                  value={formData.postal_code}
+                  onChange={(e) =>
+                    setFormData({ ...formData, postal_code: e.target.value })
+                  }
+                />
+
+                <input
+                  className="input"
+                  placeholder="Country"
+                  value={formData.country}
+                  onChange={(e) =>
+                    setFormData({ ...formData, country: e.target.value })
+                  }
+                />
               </div>
 
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" />
+                <input
+                  type="checkbox"
+                  checked={formData.is_default}
+                  onChange={(e) =>
+                    setFormData({ ...formData, is_default: e.target.checked })
+                  }
+                />
                 Save as default address
               </label>
+
+              <Button onClick={saveAddress} className="mt-4">
+                Save Address
+              </Button>
             </div>
           )}
         </div>
+
+        {uiError && (
+          <div className="mb-6 rounded-lg bg-red-100 text-red-700 px-4 py-3">
+            {uiError}
+          </div>
+        )}
 
         {/* RIGHT */}
         <div className="lg:col-span-1">
@@ -131,30 +323,35 @@ export default function CheckoutPage() {
             <div className="space-y-3 mb-5 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>₦120.00</span>
+                <span>₦{subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span>Shipping</span>
-                <span>₦10.00</span>
+                <span>₦{shipping.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span>Taxes</span>
-                <span>₦9.60</span>
-              </div>
+                <span>Tax</span>
+                <span>₦{tax.toLocaleString()}</span>
+              </div> */}
             </div>
 
             <div className="border-t pt-4 mb-6 flex justify-between font-bold">
               <span>Total</span>
-              <span>₦139.60</span>
+              <span>₦{total.toLocaleString()}</span>
             </div>
 
             <Button
               onClick={handlePay}
+              disabled={!address || loadingPayment}
               isLoading={loadingPayment}
               loadingText="Redirecting..."
-              className="w-full bg-black text-white py-4 rounded-lg font-semibold"
+              className={`w-full py-4 rounded-lg font-semibold ${
+                !address
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-black text-white"
+              }`}
             >
-              Pay ₦139.60
+              Pay ₦{total.toLocaleString()}
             </Button>
 
             <div className="flex justify-center items-center gap-2 text-xs text-neutral-500 mt-4">
@@ -165,7 +362,6 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* INPUT STYLE */}
       <style jsx>{`
         .input {
           width: 100%;

@@ -1,113 +1,222 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import SiteHeader from "../../../components/site-header"
-import { Heart } from "lucide-react"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import SiteHeader from "../../../components/site-header";
+import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import API from "@/lib/api";
+
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+interface ApiProduct {
+  id: number;
+  name: string;
+  price: number;
+  image_url: string;
+  isFavorited?: boolean;
+}
 
 interface Product {
-  id: number
-  name: string
-  color: string
-  price: number
-  image: string
+  id: number;
+  name: string;
+  color: string;
+  price: number;
+  image: string;
 }
 
 interface RecommendedProduct {
-  id: number
-  title: string
-  description: string
-  image: string
+  id: number;
+  name: string;
+  price: number;
+  image_url: string;
 }
 
 interface JournalPost {
-  id: number
-  category: string
-  title: string
-  image: string
+  id: number;
+  category: string;
+  title: string;
+  image: string;
+}
+
+interface FeaturedLookbook {
+  id: number;
+  title: string;
+  subtitle?: string;
+  image_urls: string[];
+  link?: string;
 }
 
 export default function Dashboard() {
-  const newArrivals: Product[] = [
-    {
-      id: 1,
-      name: "Breeze Linen Shirt",
-      color: "Oat",
-      price: 110,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCsYL-WL36HTht-0VXZfdTDhg-zHktQ6pgUMRxXO2M9_0iGcnvn-c9Rdnd7aYvgScbPkqW5AyHMWiqJgk_hiRBYBi45-IUXCgrFtLRXRNMnd-hLAPlm5VBi_e_VS1uy1O_7s5CF91sKgu4SRf-Ttjxcpn5IncFYY6uMKn_tnXqNsAQ1OtpqpKoiFFfdvaWhv3aHDL3WJSyF_-bjOoPt7ZmTPEoj9d50iTFXnh_mldAff9I56qihAYsCTZNQAiX7y2Eny_0swwzsLhZk",
-    },
-    {
-      id: 2,
-      name: "City Trousers",
-      color: "Charcoal",
-      price: 145,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDZdLTKpNdAIincDELVADNfTI5FmxqsbYAQnvBt0mb9fqqL9d4Eh98d65EX_J2HVuSYsqNR42Lcz5PFZLilKVVVCN-Fp-J_4VWKNphFh7svgpMvtMnmBoKpgHraqGpNJWMMyrHnwzRtxD8ucOJPGRFIxCijYluvnxe-Qpx0CuRRBbfbuQI5kF4rHKuRMYKw_cL5Os74lgGNfnnqu7egzxaUPmGwqUzSFvCne3diCLTw1aiBdlWaK-SWCkQOUW_lKGv8vyVXuIYj-HY3",
-    },
-    {
-      id: 3,
-      name: "Merino Crewneck",
-      color: "Dusty Rose",
-      price: 160,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAqLaQiZujbgcEcrjMNvUr8YIFMMKZ3-Pdu0KAGGIxzzPL-OVzCTwB-whZRGyE0_eCJTkqMuiHUdRQ5bsvQFXBPFXR4D41i7UzHop_xO2ZkjY9q_v0YobLav7DTGnSS8lI9rAVOcIDsLcouKIpBGVHvj9D2IpnumkjP3GTe1jSrthr4J8fp0zOEyUkeUGMUcaPtgmF_qAo98mE3APOptFwgP9yrJAsQ6M4G7Z3u264ZpoUtK73zg5jPXe9WLaCGS_6rMX_uzXy7ws90",
-    },
-    {
-      id: 4,
-      name: "Classic Trench",
-      color: "Navy",
-      price: 250,
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuB0WtMYyK6O6yFRCtHnG7ZCgftY4QeJw3_DNMmA-W6TZAcdtnwo4Cd6J2qhSPAA-v_WaaeDNAe6_-UhHtpxLgcr0BhKTbMuSLmU2-grx9nrsdtI3IC0tGJfFGqdnI4K46Ew_SpoP0sSqv1W_rN8eCSDFJTeXpJT1tK_wQBE_kh5JqBdAWOWNcL3kCIwYFzvbJ6iOojwPlr58jausx8oWg_LJajxQCmNjOs5BwwWPh2GpWMv2SJA3PBnnwgM3VCvtI4Vb26EvjYD7857",
-    },
-  ]
+  const [newArrivals, setNewArrivals] = useState<ApiProduct[]>([]);
+  const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
+  const [navigating, setNavigating] = useState(false);
 
-  const recommendedProducts: RecommendedProduct[] = [
-    {
-      id: 1,
-      title: "The Classic Denim Jacket",
-      description: "Because you loved our City Trousers",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuB0WtMYyK6O6yFRCtHnG7ZCgftY4QeJw3_DNMmA-W6TZAcdtnwo4Cd6J2qhSPAA-v_WaaeDNAe6_-UhHtpxLgcr0BhKTbMuSLmU2-grx9nrsdtI3IC0tGJfFGqdnI4K46Ew_SpoP0sSqv1W_rN8eCSDFJTeXpJT1tK_wQBE_kh5JqBdAWOWNcL3kCIwYFzvbJ6iOojwPlr58jausx8oWg_LJajxQCmNjOs5BwwWPh2GpWMv2SJA3PBnnwgM3VCvtI4Vb26EvjYD7857",
-    },
-    {
-      id: 2,
-      title: "Washed Silk Blouse",
-      description: "A perfect match for linen",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBFH29jb3fV2Uoql9tQZTeojyHoikzbS_StjvM-C38y5418j2AnJMrHqqyKvH5l3rzV-kctycdgCmlYDu-Xkbl5x-6jQw6AJnGvXsNLlEQUJwVYOQ-meWiEAB07xSR8J3doVq8czG2G9WLp_AyN0SOc01O39Jz2kOQnNWrdyNd5BOS86DESP8BycNKO5FQ-C6TUbKCcHc-QxLfBF7BfHOPQUAlSXdrLhdbNZUYcswWcjG2KaUlQ1SZGveGO01ha0P5PA6-o5HVkyblR",
-    },
-  ]
+  const [featuredLookbook, setFeaturedLookbook] =
+    useState<FeaturedLookbook | null>(null);
+  const [loadingLookbook, setLoadingLookbook] = useState(true);
+  const [recommendations, setRecommendations] = useState<RecommendedProduct[]>(
+    [],
+  );
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
 
-  const journalPosts: JournalPost[] = [
-    {
-      id: 1,
-      category: "Style Guide",
-      title: "The Art of Layering: A Guide to Transitional Weather",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDbXxUfuBw4DpFY0vGuflMCgYsNTy6wzjTv2r630c48fAeUpwfhi9TXBkY8xH8-_G2ZUd0SfnQswmncbFZu6yymOkk1uTwf0vrC4mHzR0gIrV5v9lFnzIIlVuoBxr3j3aYG-Fn9mEKjxVo9w46IQsNpMwtBa_Zpb32PjxxV1yAAHiPA4frW47ZvfVJ6G1WaJoCbIY2JdK8RWyYxGCHSepRl0ydt2cEFYP3Yu6wBJPl8q8MzRFfvfRxRcjw-FRAiV6ct31lczAORaybD",
-    },
-    {
-      id: 2,
-      category: "Fabric Care",
-      title: "How to Care For Your Merino Wool Pieces",
-      image:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCsYL-WL36HTht-0VXZfdTDhg-zHktQ6pgUMRxXO2M9_0iGcnvn-c9Rdnd7aYvgScbPkqW5AyHMWiqJgk_hiRBYBi45-IUXCgrFtLRXRNMnd-hLAPlm5VBi_e_VS1uy1O_7s5CF91sKgu4SRf-Ttjxcpn5IncFYY6uMKn_tnXqNsAQ1OtpqpKoiFFfdvaWhv3aHDL3WJSyF_-bjOoPt7ZmTPEoj9d50iTFXnh_mldAff9I56qihAYsCTZNQAiX7y2Eny_0swwzsLhZk",
-    },
-  ]
+  const [recommendationReason, setRecommendationReason] = useState("");
+  const [journalPosts, setJournalPosts] = useState<JournalPost[]>([]);
+const [loadingJournal, setLoadingJournal] = useState(true);
 
-  const [wishlist, setWishlist] = useState<Set<number>>(new Set())
 
-  const toggleWishlist = (id: number) => {
-    const newWishlist = new Set(wishlist)
-    if (newWishlist.has(id)) {
-      newWishlist.delete(id)
-    } else {
-      newWishlist.add(id)
+
+ useEffect(() => {
+  API.get("/products/new-arrivals", { params: { limit: 4 } })
+    .then((res) => {
+      const products = (res.data.products || []).map((p: ApiProduct) => ({
+        ...p,
+        isFavorited: false,
+      }));
+      setNewArrivals(products);
+      fetchFavorites(); // keep as-is
+    })
+    .catch(console.error)
+    .finally(() => setLoadingNewArrivals(false));
+}, []);
+
+
+ useEffect(() => {
+  API.get("/lookbook/featured")
+    .then((res) => {
+      if (res.data.success && res.data.lookbook?.image_urls?.length) {
+        setFeaturedLookbook(res.data.lookbook);
+      } else {
+        setFeaturedLookbook(null);
+      }
+    })
+    .catch(console.error)
+    .finally(() => setLoadingLookbook(false));
+}, []);
+
+
+  useEffect(() => {
+  API.get("/recommendations")
+    .then((res) => {
+      if (res.data.success) {
+        setRecommendations(res.data.products || []);
+        setRecommendationReason(res.data.reason || "Just for you");
+      }
+    })
+    .catch(() => {
+      console.error("Failed to fetch recommendations");
+    })
+    .finally(() => setLoadingRecommendations(false));
+}, []);
+
+
+
+ useEffect(() => {
+  API.get("/journal", { params: { limit: 2 } })
+    .then((res) => {
+      if (res.data.success) {
+        setJournalPosts(res.data.posts.slice(0, 2));
+      }
+    })
+    .catch(console.error)
+    .finally(() => setLoadingJournal(false));
+}, []);
+
+
+  // const recommendedProducts: RecommendedProduct[] = [
+  //   {
+  //     id: 1,
+  //     title: "The Classic Denim Jacket",
+  //     description: "Because you loved our City Trousers",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuB0WtMYyK6O6yFRCtHnG7ZCgftY4QeJw3_DNMmA-W6TZAcdtnwo4Cd6J2qhSPAA-v_WaaeDNAe6_-UhHtpxLgcr0BhKTbMuSLmU2-grx9nrsdtI3IC0tGJfFGqdnI4K46Ew_SpoP0sSqv1W_rN8eCSDFJTeXpJT1tK_wQBE_kh5JqBdAWOWNcL3kCIwYFzvbJ6iOojwPlr58jausx8oWg_LJajxQCmNjOs5BwwWPh2GpWMv2SJA3PBnnwgM3VCvtI4Vb26EvjYD7857",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Washed Silk Blouse",
+  //     description: "A perfect match for linen",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBFH29jb3fV2Uoql9tQZTeojyHoikzbS_StjvM-C38y5418j2AnJMrHqqyKvH5l3rzV-kctycdgCmlYDu-Xkbl5x-6jQw6AJnGvXsNLlEQUJwVYOQ-meWiEAB07xSR8J3doVq8czG2G9WLp_AyN0SOc01O39Jz2kOQnNWrdyNd5BOS86DESP8BycNKO5FQ-C6TUbKCcHc-QxLfBF7BfHOPQUAlSXdrLhdbNZUYcswWcjG2KaUlQ1SZGveGO01ha0P5PA6-o5HVkyblR",
+  //   },
+  // ];
+
+  // const journalPosts: JournalPost[] = [
+  //   {
+  //     id: 1,
+  //     category: "Style Guide",
+  //     title: "The Art of Layering: A Guide to Transitional Weather",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuDbXxUfuBw4DpFY0vGuflMCgYsNTy6wzjTv2r630c48fAeUpwfhi9TXBkY8xH8-_G2ZUd0SfnQswmncbFZu6yymOkk1uTwf0vrC4mHzR0gIrV5v9lFnzIIlVuoBxr3j3aYG-Fn9mEKjxVo9w46IQsNpMwtBa_Zpb32PjxxV1yAAHiPA4frW47ZvfVJ6G1WaJoCbIY2JdK8RWyYxGCHSepRl0ydt2cEFYP3Yu6wBJPl8q8MzRFfvfRxRcjw-FRAiV6ct31lczAORaybD",
+  //   },
+  //   {
+  //     id: 2,
+  //     category: "Fabric Care",
+  //     title: "How to Care For Your Merino Wool Pieces",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCsYL-WL36HTht-0VXZfdTDhg-zHktQ6pgUMRxXO2M9_0iGcnvn-c9Rdnd7aYvgScbPkqW5AyHMWiqJgk_hiRBYBi45-IUXCgrFtLRXRNMnd-hLAPlm5VBi_e_VS1uy1O_7s5CF91sKgu4SRf-Ttjxcpn5IncFYY6uMKn_tnXqNsAQ1OtpqpKoiFFfdvaWhv3aHDL3WJSyF_-bjOoPt7ZmTPEoj9d50iTFXnh_mldAff9I56qihAYsCTZNQAiX7y2Eny_0swwzsLhZk",
+  //   },
+  // ];
+
+  const [loadingFavIds, setLoadingFavIds] = useState<number[]>([]);
+
+  const fetchFavorites = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`${API_BASE}/favorites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!data.success) return;
+
+      const favIds = data.favorites.map((f: any) => f.id);
+
+      setNewArrivals((prev) =>
+        prev.map((p) => ({
+          ...p,
+          isFavorited: favIds.includes(p.id),
+        })),
+      );
+    } catch (err) {
+      console.error("Failed to fetch favorites");
     }
-    setWishlist(newWishlist)
-  }
+  };
+
+  const toggleFavorite = async (productId: number, isFavorited: boolean) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      setLoadingFavIds((prev) => [...prev, productId]);
+
+      await fetch(
+        isFavorited
+          ? `${API_BASE}/favorites/${productId}`
+          : `${API_BASE}/favorites`,
+        {
+          method: isFavorited ? "DELETE" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: isFavorited ? null : JSON.stringify({ productId }),
+        },
+      );
+
+      setNewArrivals((prev) =>
+        prev.map((p) =>
+          p.id === productId ? { ...p, isFavorited: !isFavorited } : p,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to toggle favorite");
+    } finally {
+      setLoadingFavIds((prev) => prev.filter((id) => id !== productId));
+    }
+  };
 
   return (
     <div className="bg-white min-h-screen">
@@ -128,34 +237,76 @@ export default function Dashboard() {
             {/* New Arrivals Section */}
             <section>
               <div className="flex items-center justify-between gap-4 mb-6">
-                <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">New Arrivals</h2>
-                <Link href="/pages/user/fabrics" className="text-sm font-medium text-black/80 hover:underline">
-                  View All
-                </Link>
+                <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
+                  New Arrivals
+                </h2>
+                <div className="flex items-center gap-3">
+                  {navigating && (
+                    <span className="text-sm text-neutral-500 animate-pulse">
+                      Loading…
+                    </span>
+                  )}
+
+                  <Link
+                    href="/pages/user/new-arrivals"
+                    onClick={() => setNavigating(true)}
+                    className="text-sm font-medium text-black/80 hover:underline"
+                  >
+                    View All
+                  </Link>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+                {loadingNewArrivals && <p>Loading new arrivals...</p>}
+
+                {!loadingNewArrivals && newArrivals.length === 0 && (
+                  <p>No new arrivals yet.</p>
+                )}
+
                 {newArrivals.map((product) => (
                   <div key={product.id} className="group relative">
                     <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-neutral-200 relative">
+                      {/* ❤️ FAVORITE */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(
+                            product.id,
+                            product.isFavorited || false,
+                          );
+                        }}
+                        disabled={loadingFavIds.includes(product.id)}
+                        className="absolute top-3 right-3 z-10 bg-white rounded-full p-2 shadow hover:bg-neutral-100 transition disabled:opacity-50"
+                      >
+                        <Heart
+                          size={18}
+                          className={
+                            product.isFavorited
+                              ? "fill-red-500 text-red-500"
+                              : "text-neutral-600"
+                          }
+                        />
+                      </button>
+
                       <img
-                        src={product.image || "/placeholder.svg"}
+                        src={product.image_url || "/placeholder.svg"}
                         alt={product.name}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
-                      <button
-                        onClick={() => toggleWishlist(product.id)}
-                        className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-neutral-100"
-                      >
-                        <Heart
-                          size={20}
-                          className={wishlist.has(product.id) ? "fill-red-500 text-red-500" : "text-neutral-600"}
-                        />
-                      </button>
+
+                      {/* NEW badge */}
+                      <span className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">
+                        NEW
+                      </span>
                     </div>
+
                     <div className="mt-2 text-sm">
-                      <h3 className="font-medium text-black">{product.name}</h3>
-                      <p className="text-neutral-600">{product.color}</p>
-                      <p className="mt-1 font-medium text-black/90">${product.price}</p>
+                      <h3 className="font-medium text-black truncate">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 font-medium text-black/90">
+                        ₦{Number(product.price || 0).toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -164,20 +315,57 @@ export default function Dashboard() {
 
             {/* Featured Lookbook Section */}
             <section>
-              <Link href="#" className="group block">
-                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg">
-                  <img
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoUIMnQ_WionhAFzO8tIVSUxu56Mmt-QeAgNfLnbOHzntpYfrnnb6gv1BCvdjkPCJ8lZFx0PRFAXtlfN9nR3DUxEuHC_7I9BUa9oljFxXxh-HAvO76q0RCxPcGPeRTKs1NoD7D4QG47cO24sSzWugAiIdn3kddg_I3GPOW-GRhOjRsShF7-3tos3S_1GPKv-FKX5HtYS6o23LvQi5HwAyRSgvJcD9i8x-6NLxBQWO1xDQTAgLL5xzn4hZe8xLzN8Bk6CZsd5STh84t"
-                    alt="Featured Lookbook"
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  <div className="absolute bottom-6 left-6 text-white sm:bottom-8 sm:left-8">
-                    <p className="text-sm font-medium uppercase tracking-widest">Featured Lookbook</p>
-                    <h3 className="mt-1 text-3xl font-bold sm:text-4xl">Autumn Textures</h3>
+              {loadingLookbook && (
+                <div className="aspect-[16/9] rounded-lg bg-neutral-200 animate-pulse" />
+              )}
+
+              {!loadingLookbook && featuredLookbook && (
+                <Link href={featuredLookbook.link || "#"} className="block">
+                  <div className="relative overflow-hidden rounded-lg">
+                    <div className="flex w-max animate-scroll-lookbook">
+                      {[
+                        ...featuredLookbook.image_urls,
+                        ...featuredLookbook.image_urls,
+                      ].map((img, index) => (
+                        <div
+                          key={index}
+                          className="shrink-0 w-screen max-w-[1400px] aspect-[16/9] lg:aspect-[21/9]"
+                        >
+                          <img
+                            src={img}
+                            alt={featuredLookbook.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
+                    {/* Text */}
+                    <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 z-10 text-white">
+                      <p className="text-sm uppercase tracking-widest">
+                        Featured Lookbook
+                      </p>
+                      <h3 className="mt-1 text-3xl font-bold sm:text-4xl">
+                        {featuredLookbook.title}
+                      </h3>
+                      {featuredLookbook.subtitle && (
+                        <p className="mt-1 text-sm text-white/90">
+                          {featuredLookbook.subtitle}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              )}
+
+              {!loadingLookbook && !featuredLookbook && (
+                <p className="text-center text-neutral-500">
+                  No featured lookbook yet.
+                </p>
+              )}
             </section>
 
             {/* Just For You Section */}
@@ -187,27 +375,41 @@ export default function Dashboard() {
                   <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
                     Just For You
                   </h2>
-                  <p className="mt-2 text-neutral-600">Picks based on your recent activity.</p>
+                  <p className="text-xs text-neutral-500">
+                    {recommendationReason}
+                  </p>
                 </div>
+
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:col-span-2">
-                  {recommendedProducts.map((product) => (
+                  {loadingRecommendations && <p>Loading recommendations…</p>}
+
+                  {!loadingRecommendations && recommendations.length === 0 && (
+                    <p className="text-neutral-500">
+                      No recommendations yet. Start exploring products.
+                    </p>
+                  )}
+
+                  {recommendations.map((product) => (
                     <Link
                       key={product.id}
-                      href="#"
+                      href={`/pages/user/products/${product.id}`}
                       className="group flex items-center gap-4 rounded-lg bg-neutral-100/50 p-4 hover:bg-neutral-100 transition"
                     >
                       <div className="aspect-square w-20 flex-shrink-0 overflow-hidden rounded-md bg-neutral-200">
                         <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.title}
+                          src={product.image_url || "/placeholder.svg"}
+                          alt={product.name}
                           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
+
                       <div>
                         <h3 className="text-base font-medium leading-tight text-black group-hover:underline">
-                          {product.title}
+                          {product.name}
                         </h3>
-                        <p className="text-sm text-neutral-600">{product.description}</p>
+                        <p className="text-sm font-medium text-black/80">
+                          ₦{Number(product.price).toLocaleString()}
+                        </p>
                       </div>
                     </Link>
                   ))}
@@ -221,7 +423,10 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
                   From the Journal
                 </h2>
-                <Link href="/pages/user/journal" className="text-sm font-medium text-black/80 hover:underline">
+                <Link
+                  href="/pages/user/journal"
+                  className="text-sm font-medium text-black/80 hover:underline"
+                >
                   Read All
                 </Link>
               </div>
@@ -236,7 +441,9 @@ export default function Dashboard() {
                       />
                     </div>
                     <div className="mt-4">
-                      <p className="text-sm uppercase tracking-wider text-neutral-600">{post.category}</p>
+                      <p className="text-sm uppercase tracking-wider text-neutral-600">
+                        {post.category}
+                      </p>
                       <h3 className="mt-1 text-lg font-medium leading-tight text-black group-hover:underline">
                         {post.title}
                       </h3>
@@ -249,5 +456,5 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }

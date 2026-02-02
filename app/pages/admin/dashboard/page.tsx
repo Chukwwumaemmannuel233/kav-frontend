@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, ArrowRight } from "lucide-react";
 import AdminHeader from "../../../components/admin-header";
 import { Button } from "../../../components/ui/button";
@@ -22,6 +22,14 @@ export default function AdminDashboard() {
   const [isNewProduct, setNewProduct] = useState(false);
   const [isMessages, setMessages] = useState(false);
   const maxValue = Math.max(...weeklyData.map((d) => d.value));
+
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    router.push("/pages/admin/login");
+  }
+}, []);
+
 
   const Orders = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +65,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <AdminHeader />
+      {/* <AdminHeader /> */}
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 pb-24 md:pb-8">
         {/* Page Header */}

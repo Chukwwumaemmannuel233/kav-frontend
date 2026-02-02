@@ -49,7 +49,7 @@ export default function RootLayout({
       <body className={`font-sans antialiased`}>
         <LoadingProvider>
           <CartProvider>
-            <InitialLoadingScreen />
+            {/* <InitialLoadingScreen /> */}
             <NavigationProgress />
             <Toaster richColors position="top-right" />
             {children}

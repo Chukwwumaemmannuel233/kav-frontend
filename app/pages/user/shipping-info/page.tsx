@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import SiteHeader from "../components/site-header"
+import SiteHeader from "../../../components/site-header"
 import Link from "next/link"
 
 interface ExpandedSection {

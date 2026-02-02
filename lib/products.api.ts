@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+import API from "./api";
 
 export const getProducts = async (params?: {
   page?: number;
@@ -10,11 +8,11 @@ export const getProducts = async (params?: {
   maxPrice?: number;
   search?: string;
 }) => {
-  const res = await axios.get(`${API}/products`, { params });
+  const res = await API.get("/products", { params });
   return res.data;
 };
 
 export const getProductById = async (id: number | string) => {
-  const res = await axios.get(`${API}/products/${id}`);
+  const res = await API.get(`/products/${id}`);
   return res.data;
 };

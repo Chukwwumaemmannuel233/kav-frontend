@@ -106,7 +106,7 @@ export default function LoginPage() {
             Login
           </Button>
 
-          <div className="mt-2">
+          {/* <div className="mt-2">
             <button
               type="button"
               onClick={() => router.push("/pages/auth/admin-login")}
@@ -114,7 +114,7 @@ export default function LoginPage() {
             >
               Admin Login
             </button>
-          </div>
+          </div> */}
         </form>
 
         <div className="text-center mt-8">

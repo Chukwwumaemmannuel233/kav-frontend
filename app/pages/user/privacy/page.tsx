@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import SiteHeader from "../components/site-header"
+import SiteHeader from "../../../components/site-header"
 
 const tableOfContents = [
   { id: "introduction", label: "Introduction" },

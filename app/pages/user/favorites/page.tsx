@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import SiteHeader from "../../../components/site-header";
 import { Button } from "../../../components/ui/button";
+import { toast } from "sonner";
+import { useCart } from "@/lib/cart-context";
 
 interface FavoriteItem {
   id: string;
@@ -12,63 +14,85 @@ interface FavoriteItem {
   description: string;
   image: string;
   isFavorited: boolean;
+  price: number;
 }
 
 export default function FavoritesPage() {
-  const [isCart, setIsCart] = useState(false);
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([
-    {
-      id: "1",
-      name: "Heavyweight Linen - Natural",
-      description: "",
-      image: "/heavyweight-linen-natural.jpg",
-      isFavorited: true,
-    },
-    {
-      id: "2",
-      name: "Silk Charmeuse - Blush",
-      description: "",
-      image: "/silk-charmeuse-blush.jpg",
-      isFavorited: true,
-    },
-    {
-      id: "3",
-      name: "Organic Cotton Jersey - White",
-      description: "",
-      image: "/organic-cotton-jersey-white.jpg",
-      isFavorited: true,
-    },
-    {
-      id: "4",
-      name: "Wool Tweed - Charcoal",
-      description: "",
-      image: "/wool-tweed-charcoal.jpg",
-      isFavorited: true,
-    },
-  ]);
-  const handleCheckout = async (e: React.FormEvent) => {
-      e.preventDefault();
-    setIsCart(true);
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsCart(false);
-  };
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [loadingIds, setLoadingIds] = useState<string[]>([]);
+  const { addToCart, items } = useCart();
 
-  const toggleFavorite = (id: string) => {
-    setFavorites(
-      favorites.map((item) =>
-        item.id === id ? { ...item, isFavorited: !item.isFavorited } : item
-      )
-    );
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  // Fetch favorites
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API_BASE}/favorites`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          setFavorites(
+            data.favorites.map((item: any) => ({
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              image: item.image_url || "/placeholder.svg",
+              price: item.price,
+              isFavorited: true,
+            }))
+          );
+        }
+      } catch (err) {
+        console.error("Failed to fetch favorites:", err);
+        toast.error("Failed to load favorites.");
+      }
+    };
+
+    fetchFavorites();
+  }, [API_BASE]);
+
+  // Toggle favorite
+  const toggleFavorite = async (id: string) => {
+    const item = favorites.find((f) => f.id === id);
+    if (!item) return;
+
+    setLoadingIds((prev) => [...prev, id]);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (item.isFavorited) {
+        const res = await fetch(`${API_BASE}/favorites/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          setFavorites((prev) => prev.filter((f) => f.id !== id));
+          toast.success("Removed from favorites.");
+        }
+      }
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+      toast.error("Could not update favorite.");
+    } finally {
+      setLoadingIds((prev) => prev.filter((i) => i !== id));
+    }
   };
 
   return (
     <main className="bg-white min-h-screen">
-      <SiteHeader />
+      <SiteHeader variant="user" />
 
       {/* Hero Section */}
       <section className="px-6 md:px-16 py-16 md:py-24 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 text-balance">
+        <h1 className="text-5xl md:text-6xl font-bold mb-6">
           My Favorites
         </h1>
       </section>
@@ -78,60 +102,67 @@ export default function FavoritesPage() {
         <div className="max-w-7xl mx-auto">
           {favorites.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {favorites.map((item) => (
-                <div key={item.id} className="group">
-                  {/* Product Image Container */}
-                  <div className="relative mb-4 aspect-[3/4] overflow-hidden rounded-lg bg-neutral-100">
-                    <img
-                      src={item.image || "/placeholder.svg"}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+              {favorites.map((item) => {
+                const isInCart = items.some(
+                  (cartItem) => cartItem.id === Number(item.id)
+                );
 
-                    {/* Heart Button */}
-                    <button
-                      onClick={() => toggleFavorite(item.id)}
-                      className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-neutral-100 transition-colors"
-                      aria-label="Toggle favorite"
-                    >
-                      <Heart
-                        size={24}
-                        className={
-                          item.isFavorited
-                            ? "fill-red-500 text-red-500"
-                            : "text-neutral-600"
-                        }
+                return (
+                  <div key={item.id} className="group relative">
+                    {/* Image */}
+                    <div className="relative mb-4 aspect-[3/4] overflow-hidden rounded-lg bg-neutral-100">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                    </button>
+
+                      {/* Favorite Button */}
+                      <button
+                        onClick={() => toggleFavorite(item.id)}
+                        disabled={loadingIds.includes(item.id)}
+                        className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                      >
+                        <Heart
+                          size={22}
+                          className="fill-red-500 text-red-500"
+                        />
+                      </button>
+                    </div>
+
+                    {/* Info */}
+                    <h3 className="font-semibold text-base md:text-lg mb-1 line-clamp-2">
+                      {item.name}
+                    </h3>
+                    <p className="text-neutral-600 text-sm mb-2">
+                      ₦{item.price} / yard
+                    </p>
+
+                    <Link
+                      href={`/fabrics/${item.id}`}
+                      className="text-sm text-neutral-600 hover:text-black transition-colors mb-3 inline-block"
+                    >
+                      View Details
+                    </Link>
+
+                    {/* Add to Cart */}
+                    <Button
+                      onClick={() => addToCart(Number(item.id), 1)}
+                      disabled={isInCart}
+                      className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                        isInCart
+                          ? "bg-neutral-300 text-neutral-600 cursor-not-allowed"
+                          : "bg-black text-white hover:bg-neutral-900"
+                      }`}
+                    >
+                      {isInCart ? "In Cart" : "Add to Cart"}
+                    </Button>
                   </div>
-
-                  {/* Product Info */}
-                  <h3 className="font-semibold text-base md:text-lg mb-2 line-clamp-2">
-                    {item.name}
-                  </h3>
-
-                  {/* View Details Link */}
-                  <Link
-                    href={`/fabrics/${item.id}`}
-                    className="text-neutral-600 text-sm hover:text-black transition-colors mb-4 inline-block"
-                  >
-                    View Details
-                  </Link>
-
-                  {/* Add to Cart Button */}
-                  <Button
-                    onClick={handleCheckout}
-                    isLoading={isCart}
-                    loadingText="Processing..."
-                    className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-neutral-900 transition-colors"
-                  >
-                    Add to Cart
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-16">
               <p className="text-neutral-600 text-lg mb-6">
                 No favorite items yet
               </p>
@@ -144,35 +175,6 @@ export default function FavoritesPage() {
           )}
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-neutral-200 px-6 md:px-16 py-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12 mb-8">
-            <Link
-              href="/contact"
-              className="text-neutral-700 hover:text-black transition-colors"
-            >
-              Contact
-            </Link>
-            <Link
-              href="/faq"
-              className="text-neutral-700 hover:text-black transition-colors"
-            >
-              FAQ
-            </Link>
-            <Link
-              href="/pages/user/shipping-info"
-              className="text-neutral-700 hover:text-black transition-colors"
-            >
-              Shipping
-            </Link>
-          </div>
-          <div className="text-center text-neutral-600 text-sm">
-            © 2023 Fabric.co Inc. All Rights Reserved.
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }

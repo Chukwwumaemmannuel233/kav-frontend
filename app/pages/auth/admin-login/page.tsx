@@ -4,8 +4,11 @@ import type React from "react";
 import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // ✅ ADD THIS
+import { useRouter } from "next/navigation"; 
 import { Eye, EyeOff } from "lucide-react";
+import { login } from "../../../../lib/auth.api"; // adjust path
+import { toast } from "sonner";
+
 
 export default function LoginPage() {
   const router = useRouter(); // ✅ INITIALIZE ROUTER
@@ -15,18 +18,34 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLogginIn, setIsLogginIn] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLogginIn(true);
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLogginIn(true);
 
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 800));
+  try {
+    const data = await login({ email, password });
 
-    console.log("Login attempt:", { email, password });
+    // EXPECTED BACKEND RESPONSE EXAMPLE:
+    // {
+    //   token: "jwt-token",
+    //   user: { id, name, email, role }
+    // }
 
-    // Redirect after login
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    toast.success("Login successful");
+
     router.push("/pages/admin/dashboard");
-  };
+  } catch (error: any) {
+    toast.error(
+      error?.response?.data?.message || "Login failed"
+    );
+  } finally {
+    setIsLogginIn(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4 py-8">
@@ -84,9 +103,10 @@ export default function LoginPage() {
           </div>
 
           <Button
-            type="submit"
+            type="button"
             isLoading={isLogginIn}
             loadingText="Logging in..."
+            onClick={handleSubmit}
             className="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-black/80 transition"
           >
             Login
