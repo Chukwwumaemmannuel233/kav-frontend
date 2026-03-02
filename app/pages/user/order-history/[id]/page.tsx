@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import SiteHeader from "../../../../components/site-header";
 import { toast } from "sonner";
+import API from "@/lib/api"; // your axios instance
 
 interface OrderItem {
   name: string;
@@ -25,88 +26,64 @@ export default function OrderDetails() {
   const { id } = useParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [canceling, setCanceling] = useState(false);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-
+  /* ==============================
+     FETCH ORDER
+  ============================== */
   useEffect(() => {
     const fetchOrder = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
-
-        const res = await fetch(`${API_BASE}/orders/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch order");
-
-        const data = await res.json();
+        const { data } = await API.get(`/orders/${id}`);
 
         setOrder({
           id: String(data.order.id),
           date: new Date(data.order.created_at).toLocaleDateString(),
           total: Number(data.order.total),
           status: data.order.status,
-          items: data.order.items,
+          items: data.order.items || [],
         });
-      } catch (err) {
-       toast.error("Failed to fetch order:");
+      } catch (err: any) {
+        toast.error("Failed to fetch order: " + (err.message || "Server error"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrder();
-  }, [id, API_BASE]);
+  }, [id]);
 
- const handleCancelOrder = () => {
-  if (!order) return;
+  /* ==============================
+     CANCEL ORDER
+  ============================== */
+  const handleCancelOrder = () => {
+    if (!order) return;
 
-  toast("Cancel this order?", {
-    description: "This action cannot be undone.",
-    action: {
-      label: "Yes, cancel",
-      onClick: async () => {
-        try {
-          const token = localStorage.getItem("token");
+    toast("Cancel this order?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Yes, cancel",
+        onClick: async () => {
+          if (canceling) return;
+          setCanceling(true);
 
-          const res = await fetch(
-            `${API_BASE}/orders/${order.id}/cancel`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          try {
+            const { data } = await API.post(`/orders/${order.id}/cancel`);
 
-          const data = await res.json();
+            toast.success(data.message || "Order canceled successfully");
 
-          if (!res.ok) {
-            toast.error(data.message || "Failed to cancel order");
-            return;
+            setOrder((prev) => prev ? { ...prev, status: "canceled" } : prev);
+          } catch (err: any) {
+            toast.error(err.response?.data?.message || "Server error");
+          } finally {
+            setCanceling(false);
           }
-
-          toast.success("Order canceled successfully");
-
-          // ✅ Update UI instantly
-          setOrder((prev) =>
-            prev ? { ...prev, status: "canceled" } : prev
-          );
-        } catch (err) {
-          toast.error("Server error");
-        }
+        },
       },
-    },
-    cancel: {
-      label: "No",
-       onClick: () => {},
-    },
-  });
-};
-
+      cancel: { label: "No", onClick: () => {} },
+    });
+  };
 
   if (loading) {
     return <div className="text-center py-12">Loading order...</div>;
@@ -135,8 +112,7 @@ export default function OrderDetails() {
                 <span className="text-neutral-500">Date:</span> {order.date}
               </p>
               <p className="mb-2">
-                <span className="text-neutral-500">Total:</span> ₦
-                {order.total.toFixed(2)}
+                <span className="text-neutral-500">Total:</span> ₦{order.total.toFixed(2)}
               </p>
 
               <div className="flex items-center gap-2 mt-4">
@@ -162,18 +138,12 @@ export default function OrderDetails() {
             {/* ITEMS */}
             <div className="bg-white rounded-lg border p-6">
               <h2 className="font-medium mb-4">Items</h2>
-
               <div className="divide-y">
                 {order.items.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between py-3 text-sm"
-                  >
+                  <div key={idx} className="flex justify-between py-3 text-sm">
                     <div>
                       <p>{item.name}</p>
-                      <p className="text-neutral-500">
-                        Qty: {item.quantity}
-                      </p>
+                      <p className="text-neutral-500">Qty: {item.quantity}</p>
                     </div>
                     <p>₦{Number(item.price).toFixed(2)}</p>
                   </div>
@@ -184,41 +154,20 @@ export default function OrderDetails() {
             {/* TRACK ORDER */}
             <div className="bg-white rounded-lg border p-6">
               <h2 className="font-medium mb-4">Order Progress</h2>
-
               <div className="space-y-3 text-sm">
                 {STATUS_STEPS.map((step) => {
-                  const active =
-                    STATUS_STEPS.indexOf(step) <=
-                    STATUS_STEPS.indexOf(order.status);
-
+                  const active = STATUS_STEPS.indexOf(step) <= STATUS_STEPS.indexOf(order.status);
                   return (
                     <div key={step} className="flex items-center gap-3">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          active
-                            ? "bg-green-600"
-                            : "bg-neutral-300"
-                        }`}
-                      />
-                      <span
-                        className={`capitalize ${
-                          active
-                            ? "font-medium"
-                            : "text-neutral-500"
-                        }`}
-                      >
-                        {step}
-                      </span>
+                      <div className={`w-3 h-3 rounded-full ${active ? "bg-green-600" : "bg-neutral-300"}`} />
+                      <span className={`capitalize ${active ? "font-medium" : "text-neutral-500"}`}>{step}</span>
                     </div>
                   );
                 })}
-
                 {order.status === "canceled" && (
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full bg-red-600" />
-                    <span className="font-medium text-red-600">
-                      canceled
-                    </span>
+                    <span className="font-medium text-red-600">canceled</span>
                   </div>
                 )}
               </div>
@@ -230,10 +179,11 @@ export default function OrderDetails() {
             <div className="bg-white rounded-lg border p-6 space-y-4">
               {order.status === "pending" && (
                 <button
-                  className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                   onClick={handleCancelOrder}
+                  disabled={canceling}
                 >
-                  Cancel Order
+                  {canceling ? "Canceling..." : "Cancel Order"}
                 </button>
               )}
             </div>

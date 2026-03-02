@@ -143,7 +143,7 @@ export default function ShippingReturnsPage() {
       <footer className="border-t border-neutral-200 py-12 bg-neutral-50">
         <div className="flex justify-center px-6">
           <div className="text-center max-w-5xl">
-            <p className="text-neutral-600 text-sm">© 2025 Textile Co. All rights reserved.</p>
+            <p className="text-neutral-600 text-sm">© 2025 K.A.V Textile. All rights reserved.</p>
           </div>
         </div>
       </footer>

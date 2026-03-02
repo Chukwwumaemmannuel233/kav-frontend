@@ -4,6 +4,9 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getUser } from "../../../lib/auth";
 import AdminHeader from "../../components/admin-header";
+import { NotificationProvider } from "@/lib/NotificationContext";
+import { MessageProvider } from "@/lib/MessageContext";
+
 
 export default function AdminLayout({
   children,
@@ -22,8 +25,13 @@ export default function AdminLayout({
 
   return (
     <>
-      <AdminHeader />
+     
+      <NotificationProvider>
+        <MessageProvider>
+           <AdminHeader />
       {children}
+      </MessageProvider>
+      </NotificationProvider>
     </>
   );
 }

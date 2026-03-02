@@ -32,7 +32,7 @@ export default function JournalPage() {
     <div className="bg-white min-h-screen">
       <SiteHeader variant="user" />
 
-      <main className="mx-auto max-w-7xl px-4 py-16">
+      <main className="mx-auto max-w-7xl px-4 py-20">
         {/* Header */}
         <div className="mb-14 text-center">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
@@ -56,7 +56,7 @@ export default function JournalPage() {
           {posts.map((post) => (
             <Link
               key={post.id}
-              href={`/pages/user/journal/${post.id}`}
+              href={`/pages/user/Journal/${post.id}`}
               className="group"
             >
               <div className="aspect-[4/3] overflow-hidden rounded-lg bg-neutral-200">

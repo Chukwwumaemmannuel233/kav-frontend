@@ -223,7 +223,7 @@ export default function ShippingInfoPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col gap-6 md:gap-8 mb-8 md:mb-12">
             <div className="text-center md:text-left">
-              <h3 className="font-bold mb-1 md:mb-2 text-sm md:text-base">TextileCo</h3>
+              <h3 className="font-bold mb-1 md:mb-2 text-sm md:text-base">K.A.V Textile</h3>
               <p className="text-neutral-600 text-xs md:text-sm">Quality fabrics for the modern creator.</p>
             </div>
             <div className="text-center">
@@ -235,14 +235,14 @@ export default function ShippingInfoPage() {
                 <Link href="/pages/user/contact" className="hover:text-black transition">
                   Contact Us
                 </Link>
-                <Link href="/privacy" className="hover:text-black transition">
+                <Link href="/pages/user/privacy" className="hover:text-black transition">
                   Privacy Policy
                 </Link>
               </div>
             </div>
           </div>
           <div className="border-t border-neutral-200 pt-6 md:pt-8 text-center text-xs md:text-sm text-neutral-600">
-            <p>© 2025 TextileCo. All rights reserved.</p>
+            <p>© 2025 K.A.V Textile. All rights reserved.</p>
           </div>
         </div>
       </footer>

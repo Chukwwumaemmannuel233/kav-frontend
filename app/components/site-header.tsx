@@ -13,6 +13,8 @@ import {
   X,
 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import API from "@/lib/api";
+import Image from "next/image";
 
 interface SiteHeaderProps {
   variant?: "guest" | "user";
@@ -32,18 +34,13 @@ function SiteHeaderUser() {
   });
 
   // Fetch user profile from backend (or localStorage token)
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        const { data } = await API.get("/user/profile"); // Axios handles token automatically
 
-        const res = await fetch(`${API_BASE}/user/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (res.ok && data?.user) {
-          // ✅ use data.user, not data directly
+        if (data?.user) {
           setUser({
             name: data.user.name || "",
             image: data.user.image || "",
@@ -51,20 +48,28 @@ function SiteHeaderUser() {
         }
       } catch (err) {
         console.error("Failed to fetch user profile:", err);
+        // Axios interceptor already handles token expired / deactivated redirect
       }
     };
+
     fetchUser();
   }, []);
 
   return (
     <>
       <header className="border-b border-neutral-200 sticky top-0 z-40 bg-white">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
           <Link
             href="/pages/user/dashboard"
-            className="text-2xl font-bold tracking-tight hover:opacity-70 transition"
+            className="hover:opacity-80 transition"
           >
-            FABRIC.
+            <Image
+              src="/images/logo1.png"
+              alt="Fabric Logo"
+              width={200}
+              height={10}
+              className="w-15 h-auto"
+            />
           </Link>
 
           <nav className="hidden md:flex gap-8 items-center">

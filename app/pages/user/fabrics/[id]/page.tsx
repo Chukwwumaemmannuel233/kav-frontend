@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
+import API from "@/lib/api"; // import your axios instance
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,66 +20,81 @@ export default function ProductPage() {
   const [isAdding, setIsAdding] = useState(false);
 
   const touchStartX = useRef<number | null>(null);
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  /* FETCH PRODUCT */
+  /* FETCH PRODUCT USING AXIOS */
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchProduct = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/products/${id}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error("Product not found");
+        const { data } = await API.get(`/products/${id}`, {
+          signal: controller.signal as any, // axios needs casting for AbortController
+        });
 
         setProduct(data.product);
         setSelectedVariant(data.product.variants?.[0] || null);
-      } catch (err) {
+      } catch (err: any) {
+        // ignore axios cancel error
+        if (err?.message === "canceled" || err?.code === "ERR_CANCELED") return;
+
+        console.error("Failed to fetch product:", err?.message || err);
         setProduct(null);
       } finally {
         setLoading(false);
       }
     };
+
     fetchProduct();
-  }, [id, API_BASE_URL]);
+
+    return () => controller.abort();
+  }, [id]);
 
   /* IMAGE SWIPE */
+  const images = [product?.image_url, ...(product?.sub_images || [])].filter(
+    Boolean,
+  );
+
   const handleTouchStart = (e: React.TouchEvent) =>
     (touchStartX.current = e.touches[0].clientX);
+
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartX.current || !product) return;
+    if (touchStartX.current === null || images.length <= 1) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50)
+
+    if (Math.abs(diff) > 50) {
       setActiveImageIndex((prev) =>
         diff > 0
           ? (prev + 1) % images.length
-          : (prev - 1 + images.length) % images.length
+          : (prev - 1 + images.length) % images.length,
       );
+    }
     touchStartX.current = null;
   };
 
-  
-  /* ADD TO CART */
-  const handleAddToCart = async () => {
-    if (!selectedVariant || isAdding) return;
+  /* ADD TO CART USING API */
+ const handleAddToCart = async () => {
+  if (!selectedVariant) {
+    toast.error("Please select a variant");
+    return;
+  }
 
-    setIsAdding(true);
-    try {
-      await addToCart(product.id, quantity, selectedVariant);
-      setQuantity(1);
-      // toast.success("Added to cart 🛒");
-    } catch (err: any) {
-      if (!selectedVariant) {
-        toast.error("Please select a variant");
-        return;
-      }
+  if (isAdding) return;
 
-      toast.error(err.message || "Failed to add to cart");
-    } finally {
-      setIsAdding(false);
-    }
-  };
+  setIsAdding(true);
 
-  const isOutOfStock = !product || product.stock_quantity <= 0;
+  try {
+    await addToCart(product.id, quantity, selectedVariant); // ONLY THIS
+    setQuantity(1);
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || "Failed to add to cart");
+  } finally {
+    setIsAdding(false);
+  }
+};
 
+
+  const isOutOfStock = !selectedVariant || selectedVariant.stock_quantity <= 0;
 
   if (loading)
     return (
@@ -86,14 +102,13 @@ export default function ProductPage() {
         Loading product...
       </main>
     );
+
   if (!product)
     return (
       <main className="min-h-screen flex items-center justify-center">
         Product not found
       </main>
     );
-
-  const images = [product.image_url, ...(product.sub_images || [])];
 
   return (
     <main className="bg-white min-h-screen">
@@ -131,7 +146,11 @@ export default function ProductPage() {
                       : "border-neutral-300"
                   }`}
                 >
-                  <img src={img} className="h-20 w-full object-cover" />
+                  <img
+                    src={img}
+                    className="h-20 w-full object-cover"
+                    alt={`${product.name} ${idx + 1}`}
+                  />
                 </button>
               ))}
             </div>
@@ -141,16 +160,11 @@ export default function ProductPage() {
           <div>
             <h1 className="text-2xl font-bold mb-3">{product.name}</h1>
 
-            {/* PRICE */}
             <p className="text-1xl font-semibold mb-6">
               ₦{selectedVariant?.price?.toFixed(2) ?? "0.00"} /{" "}
               {selectedVariant?.type ?? ""}
             </p>
 
-            {/* <p className="text-neutral-700 mb-8">{product.description}</p> */}
-
-            {/* VARIANT DROPDOWN */}
-            {/* VARIANT DROPDOWN */}
             {product.variants?.length > 0 && (
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">
@@ -161,8 +175,8 @@ export default function ProductPage() {
                   onChange={(e) =>
                     setSelectedVariant(
                       product.variants.find(
-                        (v: any) => v.id === Number(e.target.value)
-                      )
+                        (v: any) => String(v.id) === e.target.value,
+                      ),
                     )
                   }
                   className="w-44 border px-3 py-2 rounded-md"
@@ -197,14 +211,13 @@ export default function ProductPage() {
               </div>
             </div>
 
-            {/* ADD TO CART */}
             <Button
               onClick={handleAddToCart}
               isLoading={isAdding}
-             disabled={isOutOfStock}
+              disabled={isOutOfStock}
               className="w-full bg-black text-white py-4 rounded-full"
             >
-             {isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}
+              {isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}
             </Button>
           </div>
         </div>

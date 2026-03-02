@@ -1,12 +1,12 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import SiteHeader from "../../../components/site-header";
-import { Instagram, Facebook, Twitter } from "lucide-react";
+import { FaInstagram, FaFacebookF, FaTwitter, FaTiktok } from "react-icons/fa";
 import { Button } from "../../../components/ui/button";
+import { toast } from "sonner"; // ✅ Sonner toast
+import API from "@/lib/api"; // adjust the path if needed
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -18,23 +18,31 @@ export default function ContactPage() {
   const [isContact, setIsContact] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsContact(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    console.log("Form submitted:", formData);
-    setFormData({ fullName: "", email: "", subject: "", message: "" });
+    try {
+      const { data } = await API.post("/contact/contact", formData);
+      toast.success(data.message || "Message sent!");
 
-     setIsContact(false);
+      // Clear the form inputs
+      setFormData({
+        fullName: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to send message");
+    } finally {
+      setIsContact(false);
+    }
   };
 
   return (
@@ -58,7 +66,6 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              {/* Email */}
               <div>
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
                   Email
@@ -71,7 +78,6 @@ export default function ContactPage() {
                 </a>
               </div>
 
-              {/* Phone */}
               <div>
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
                   Phone
@@ -84,7 +90,6 @@ export default function ContactPage() {
                 </a>
               </div>
 
-              {/* Address */}
               <div>
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
                   Address
@@ -94,7 +99,6 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              {/* Business Hours */}
               <div>
                 <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
                   Business Hours
@@ -104,29 +108,34 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              {/* Social Media */}
               <div>
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-4">
+                <p className="font-semibold text-gray-500 uppercase text-xs mb-2">
                   Follow Us
                 </p>
-                <div className="flex gap-3">
+                <div className="flex gap-4 text-2xl">
                   <a
                     href="#"
-                    className="bg-pink-100 text-pink-600 p-3 rounded-lg hover:bg-pink-200 transition"
+                    className="text-pink-500 hover:text-pink-600 transition"
                   >
-                    <Instagram size={20} />
+                    <FaInstagram />
                   </a>
                   <a
                     href="#"
-                    className="bg-neutral-200 text-neutral-700 p-3 rounded-lg hover:bg-neutral-300 transition"
+                    className="text-blue-400 hover:text-blue-500 transition"
                   >
-                    <Twitter size={20} />
+                    <FaTwitter />
                   </a>
                   <a
                     href="#"
-                    className="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition"
+                    className="text-blue-700 hover:text-blue-800 transition"
                   >
-                    <Facebook size={20} />
+                    <FaFacebookF />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-black hover:text-gray-800 transition"
+                  >
+                    <FaTiktok />
                   </a>
                 </div>
               </div>
@@ -137,7 +146,6 @@ export default function ContactPage() {
               <h2 className="text-2xl font-bold mb-8">Send us a message</h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Full Name */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-900 mb-2">
                     Full Name
@@ -149,10 +157,10 @@ export default function ContactPage() {
                     onChange={handleChange}
                     placeholder="Enter your full name"
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:border-neutral-900 transition"
+                    required
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-900 mb-2">
                     Email Address
@@ -164,10 +172,10 @@ export default function ContactPage() {
                     onChange={handleChange}
                     placeholder="you@example.com"
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:border-neutral-900 transition"
+                    required
                   />
                 </div>
 
-                {/* Subject */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-900 mb-2">
                     Subject
@@ -182,7 +190,6 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* Message */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-900 mb-2">
                     Your Message
@@ -194,10 +201,10 @@ export default function ContactPage() {
                     placeholder="Write your message here..."
                     rows={6}
                     className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:border-neutral-900 transition resize-none"
+                    required
                   />
                 </div>
 
-                {/* Submit Button */}
                 <Button
                   type="submit"
                   isLoading={isContact}

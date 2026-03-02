@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation"; // ✅ ADD THIS
 import { Eye, EyeOff } from "lucide-react";
 import { login } from "@/lib/auth.api";
 import { toast } from "sonner";
+import AuthHeader from "../../../components/AuthHeader";
+
 
 export default function LoginPage() {
   const router = useRouter(); // ✅ INITIALIZE ROUTER
@@ -43,8 +45,12 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md p-8 md:p-10 bg-white shadow-md rounded-2xl">
+     <div className="min-h-screen bg-neutral-100">
+    <AuthHeader />
+
+    {/* Add padding top so content clears fixed header */}
+    <div className="pt-28 px-4 pb-16">
+      <div className="max-w-md mx-auto w-full bg-white p-8 md:p-10 shadow-md rounded-2xl">
         <h1 className="text-2xl font-bold text-center mb-6 tracking-tight">
           Log In
         </h1>
@@ -105,16 +111,6 @@ export default function LoginPage() {
           >
             Login
           </Button>
-
-          {/* <div className="mt-2">
-            <button
-              type="button"
-              onClick={() => router.push("/pages/auth/admin-login")}
-              className="w-full border border-black text-black font-semibold py-3 rounded-lg hover:bg-neutral-200 transition"
-            >
-              Admin Login
-            </button>
-          </div> */}
         </form>
 
         <div className="text-center mt-8">
@@ -129,6 +125,7 @@ export default function LoginPage() {
           </span>
         </div>
       </div>
+    </div>
     </div>
   );
 }

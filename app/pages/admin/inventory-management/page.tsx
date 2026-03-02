@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import AdminHeader from "../../../components/admin-header";
 import { Search, Filter, Plus, Minus, AlertCircle } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { useRouter } from "next/navigation"; // ✅ INITIALIZE ROUTER
@@ -178,7 +177,6 @@ export default function InventoryManagement() {
 
   return (
     <div className="min-h-screen bg-[#f5f1ed]">
-      <AdminHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-32 md:pb-8">
         {/* Breadcrumb */}

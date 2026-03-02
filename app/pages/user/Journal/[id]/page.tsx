@@ -25,7 +25,7 @@ export default function JournalDetail() {
     <div className="bg-white min-h-screen">
       <SiteHeader variant="user" />
 
-      <main className="mx-auto max-w-3xl px-4 py-16">
+      <main className="mx-auto max-w-3xl px-4 py-20">
         {/* Image */}
         <motion.div
           initial={{ opacity: 0, scale: 1.03 }}
@@ -34,7 +34,7 @@ export default function JournalDetail() {
           className="aspect-video overflow-hidden rounded-lg mb-10"
         >
           <img
-            src={post.image}
+            src={post.image || "/placeholder.svg"}
             alt={post.title}
             className="h-full w-full object-cover"
           />

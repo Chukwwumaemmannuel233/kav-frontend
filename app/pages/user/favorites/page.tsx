@@ -7,6 +7,7 @@ import SiteHeader from "../../../components/site-header";
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart-context";
+import API from "@/lib/api"; // use axios instance
 
 interface FavoriteItem {
   id: string;
@@ -22,18 +23,11 @@ export default function FavoritesPage() {
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const { addToCart, items } = useCart();
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-
   // Fetch favorites
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE}/favorites`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-
+        const { data } = await API.get("/favorites");
         if (data.success) {
           setFavorites(
             data.favorites.map((item: any) => ({
@@ -46,14 +40,14 @@ export default function FavoritesPage() {
             }))
           );
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to fetch favorites:", err);
         toast.error("Failed to load favorites.");
       }
     };
 
     fetchFavorites();
-  }, [API_BASE]);
+  }, []);
 
   // Toggle favorite
   const toggleFavorite = async (id: string) => {
@@ -63,22 +57,24 @@ export default function FavoritesPage() {
     setLoadingIds((prev) => [...prev, id]);
 
     try {
-      const token = localStorage.getItem("token");
-
       if (item.isFavorited) {
-        const res = await fetch(`${API_BASE}/favorites/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-
+        const { data } = await API.delete(`/favorites/${id}`);
         if (data.success) {
           setFavorites((prev) => prev.filter((f) => f.id !== id));
           toast.success("Removed from favorites.");
         }
+      } else {
+        const { data } = await API.post(`/favorites`, { productId: id });
+        if (data.success) {
+          setFavorites((prev) =>
+            prev.map((f) =>
+              f.id === id ? { ...f, isFavorited: true } : f
+            )
+          );
+          toast.success("Added to favorites.");
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to toggle favorite:", err);
       toast.error("Could not update favorite.");
     } finally {
@@ -92,9 +88,7 @@ export default function FavoritesPage() {
 
       {/* Hero Section */}
       <section className="px-6 md:px-16 py-16 md:py-24 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6">
-          My Favorites
-        </h1>
+        <h1 className="text-5xl md:text-6xl font-bold mb-6">My Favorites</h1>
       </section>
 
       {/* Favorites Grid */}
@@ -125,7 +119,11 @@ export default function FavoritesPage() {
                       >
                         <Heart
                           size={22}
-                          className="fill-red-500 text-red-500"
+                          className={`${
+                            item.isFavorited
+                              ? "fill-red-500 text-red-500"
+                              : "text-neutral-400"
+                          }`}
                         />
                       </button>
                     </div>
@@ -135,11 +133,11 @@ export default function FavoritesPage() {
                       {item.name}
                     </h3>
                     <p className="text-neutral-600 text-sm mb-2">
-                      ₦{item.price} / yard
+                       ₦{Number(item.price).toLocaleString()} / yard
                     </p>
 
                     <Link
-                      href={`/fabrics/${item.id}`}
+                      href={`/pages/user/fabrics/${item.id}`}
                       className="text-sm text-neutral-600 hover:text-black transition-colors mb-3 inline-block"
                     >
                       View Details

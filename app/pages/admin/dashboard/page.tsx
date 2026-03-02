@@ -1,35 +1,82 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Plus, ArrowRight } from "lucide-react";
-import AdminHeader from "../../../components/admin-header";
 import { Button } from "../../../components/ui/button";
-import { useRouter } from "next/navigation"; // ✅ ADD THIS
+import API from "@/lib/api";
+import { useRouter } from "next/navigation";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
+import { requestFCMToken } from "@/lib/fcm";
 
 export default function AdminDashboard() {
   // Sample data for the weekly sales chart
-  const weeklyData = [
-    { day: "Mon", value: 45 },
-    { day: "Tue", value: 30 },
-    { day: "Wed", value: 55 },
-    { day: "Thu", value: 40 },
-    { day: "Fri", value: 85 },
-    { day: "Sat", value: 50 },
-    { day: "Sun", value: 70 },
-  ];
 
   const router = useRouter(); // ✅ INITIALIZE ROUTER
   const [isOrders, setOrders] = useState(false);
   const [isNewProduct, setNewProduct] = useState(false);
   const [isMessages, setMessages] = useState(false);
-  const maxValue = Math.max(...weeklyData.map((d) => d.value));
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalSales: 0,
+    totalUsers: 0,
+    totalProducts: 0,
+  });
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    router.push("/pages/admin/login");
-  }
-}, []);
+    requestFCMToken().then(async (token) => {
+      if (token) {
+        // Save token to backend
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/save-fcm-token`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ fcm_token: token }),
+          },
+        );
+      }
+    });
+  }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/pages/admin/login");
+      return;
+    }
+
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      const res = await API.get("/admin/dashboard");
+
+      if (res.data.success) {
+        setStats(res.data.stats);
+      }
+
+      const chartRes = await API.get("/admin/charts/weekly-sales");
+
+      if (chartRes.data.success) {
+        setChartData(chartRes.data.data);
+      }
+    } catch (err) {
+      console.log("Dashboard error:", err);
+    }
+  };
 
   const Orders = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +112,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* <AdminHeader /> */}
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 pb-24 md:pb-8">
         {/* Page Header */}
@@ -81,63 +127,97 @@ export default function AdminDashboard() {
           {/* Total Orders */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
             <p className="text-sm text-neutral-600 mb-2">Total Orders</p>
-            <p className="text-3xl font-bold">1,204</p>
+            <p className="text-3xl font-bold">{stats.totalOrders}</p>
           </div>
 
           {/* Pending Orders */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
             <p className="text-sm text-neutral-600 mb-2">Pending Orders</p>
-            <p className="text-3xl font-bold">38</p>
+            <p className="text-3xl font-bold">{stats.pendingOrders}</p>
           </div>
 
           {/* Total Sales */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
             <p className="text-sm text-neutral-600 mb-2">Total Sales</p>
-            <p className="text-3xl font-bold">$25k</p>
+            <p className="text-3xl font-bold">
+              {" "}
+              ₦{Number(stats.totalSales).toLocaleString()}
+            </p>
           </div>
-
+          {/* ₦ {stats.totalSales} */}
           {/* Total Users */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
             <p className="text-sm text-neutral-600 mb-2">Total Users</p>
-            <p className="text-3xl font-bold">852</p>
+            <p className="text-3xl font-bold">{stats.totalUsers}</p>
           </div>
 
           {/* Total Products */}
           <div className="bg-white rounded-lg border border-neutral-200 p-6">
-            <p className="text-sm text-neutral-600 mb-2">Total Products</p>
-            <p className="text-3xl font-bold">412</p>
+            <p className="text-sm text-neutral-600 mb-2">Active Products</p>
+            <p className="text-3xl font-bold">{stats.totalProducts}</p>
           </div>
         </div>
 
         {/* Charts and Quick Actions Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Weekly Sales Activity */}
-          <div className="lg:col-span-2 bg-white rounded-lg border border-neutral-200 p-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold mb-1">Weekly Sales Activity</h2>
-              <p className="text-sm text-neutral-600">Last 7 Days</p>
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-neutral-200 p-4 md:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6">
+              <div>
+                <h2 className="text-lg md:text-xl font-bold">
+                  Revenue Analytics
+                </h2>
+                <p className="text-sm text-neutral-500">
+                  Weekly performance of your store
+                </p>
+              </div>
+
+              <div className="mt-3 sm:mt-0 text-left sm:text-right">
+                <p className="text-sm text-neutral-500">Total Revenue</p>
+                <p className="text-xl md:text-2xl font-bold">
+                  ₦{Number(stats.totalSales).toLocaleString()}
+                </p>
+              </div>
             </div>
 
-            {/* Bar Chart */}
-            <div className="flex items-end justify-between gap-4 h-64">
-              {weeklyData.map((item, index) => (
-                <div
-                  key={item.day}
-                  className="flex-1 flex flex-col items-center gap-3"
+            <div className="w-full h-64 sm:h-80 md:h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 10, right: 0, left: -10, bottom: 10 }}
                 >
-                  <div className="flex-1 w-full flex items-end">
-                    <div
-                      className={`w-full rounded-t-lg transition-all ${
-                        index === 4 ? "bg-black" : "bg-neutral-300"
-                      }`}
-                      style={{
-                        height: `${(item.value / maxValue) * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs text-neutral-600">{item.day}</span>
-                </div>
-              ))}
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+
+                  <XAxis
+                    dataKey="day"
+                    tick={{ fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+
+                  <YAxis
+                    tickFormatter={(value) => `₦${value / 1000}k`}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10 }}
+                  />
+
+                  <Tooltip
+                    formatter={(value) => `₦${Number(value).toLocaleString()}`}
+                    contentStyle={{
+                      borderRadius: "10px",
+                      border: "none",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                    }}
+                  />
+
+                  <Bar
+                    dataKey="total"
+                    radius={[8, 8, 0, 0]}
+                    className="fill-black"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 

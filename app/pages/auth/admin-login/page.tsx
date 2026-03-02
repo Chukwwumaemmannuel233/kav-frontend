@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { login } from "../../../../lib/auth.api"; // adjust path
 import { toast } from "sonner";
+import AuthHeader from "@/app/components/AuthHeader";
 
 
 export default function LoginPage() {
@@ -24,12 +25,6 @@ export default function LoginPage() {
 
   try {
     const data = await login({ email, password });
-
-    // EXPECTED BACKEND RESPONSE EXAMPLE:
-    // {
-    //   token: "jwt-token",
-    //   user: { id, name, email, role }
-    // }
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
@@ -48,8 +43,12 @@ export default function LoginPage() {
 
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md p-8 md:p-10 bg-white shadow-md rounded-2xl">
+      <div className="min-h-screen bg-neutral-100">
+    <AuthHeader />
+
+    {/* Push content below fixed header */}
+    <div className="pt-28 px-4 pb-16">
+      <div className="max-w-md mx-auto w-full bg-white p-8 md:p-10 shadow-md rounded-2xl">
         <h1 className="text-2xl font-bold text-center mb-6 tracking-tight">
           Admin Log In
         </h1>
@@ -125,6 +124,7 @@ export default function LoginPage() {
           </span>
         </div> */}
       </div>
+    </div>
     </div>
   );
 }

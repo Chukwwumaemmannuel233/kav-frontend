@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import SiteHeader from "../../../components/site-header"
 import { Edit, Trash2, MapPin, X } from "lucide-react"
 import { toast } from "sonner"
+import API from "@/lib/api";
+
 
 interface Address {
   id: string
@@ -36,74 +38,57 @@ export default function SavedAddressesPage() {
   })
 
   /* ================= FETCH ADDRESSES ================= */
-  const fetchAddresses = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/addresses`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-
-      const data = await res.json()
-      setAddresses(data.addresses || [])
-    } catch {
-      toast.error("Failed to load addresses")
-    } finally {
-      setLoading(false)
-    }
+ const fetchAddresses = async () => {
+  try {
+    const { data } = await API.get("/addresses");
+    setAddresses(data.addresses || []);
+  } catch (err) {
+    toast.error("Failed to load addresses");
+  } finally {
+    setLoading(false);
   }
+};
+
 
   useEffect(() => {
     fetchAddresses()
   }, [])
 
   /* ================= ACTIONS ================= */
-  const handleSetPrimary = async (id: string) => {
-    const toastId = toast.loading("Setting primary address...")
+ const handleSetPrimary = async (id: string) => {
+  const toastId = toast.loading("Setting primary address...");
 
-    try {
-      const res = await fetch(`${API_BASE}/addresses/${id}/default`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-
-      if (!res.ok) throw new Error()
-
-      toast.success("Primary address updated")
-      fetchAddresses()
-    } catch {
-      toast.error("Failed to set primary address")
-    } finally {
-      toast.dismiss(toastId)
-    }
+  try {
+    await API.put(`/addresses/${id}/default`);
+    toast.success("Primary address updated");
+    fetchAddresses();
+  } catch {
+    toast.error("Failed to set primary address");
+  } finally {
+    toast.dismiss(toastId);
   }
+};
 
   const handleDelete = async (id: string) => {
-    const confirmed = confirm("Delete this address?")
-    if (!confirmed) return
+  const confirmed = confirm("Delete this address?");
+  if (!confirmed) return;
 
-    const toastId = toast.loading("Deleting address...")
+  const toastId = toast.loading("Deleting address...");
 
-    try {
-      const res = await fetch(`${API_BASE}/addresses/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+  try {
+    // ✅ Use Axios API instance instead of fetch
+    await API.delete(`/addresses/${id}`);
 
-      if (!res.ok) throw new Error()
-
-      toast.success("Address deleted")
-      fetchAddresses()
-    } catch {
-      toast.error("Failed to delete address")
-    } finally {
-      toast.dismiss(toastId)
-    }
+    toast.success("Address deleted");
+    fetchAddresses(); // refresh the list
+  } catch (err) {
+    // Axios errors will be caught here
+    toast.error("Failed to delete address");
+  } finally {
+    toast.dismiss(toastId);
   }
+};
+
 
   const handleEdit = (address: Address) => {
     setEditingAddress(address)
@@ -125,40 +110,36 @@ export default function SavedAddressesPage() {
     setIsDialogOpen(true)
   }
 
-  const handleSubmit = async () => {
-    const toastId = toast.loading(
-      editingAddress ? "Updating address..." : "Saving address..."
-    )
+ const handleSubmit = async () => {
+  const toastId = toast.loading(
+    editingAddress ? "Updating address..." : "Saving address..."
+  );
 
-    try {
-      const url = editingAddress
-        ? `${API_BASE}/addresses/${editingAddress.id}`
-        : `${API_BASE}/addresses`
+  try {
+    const url = editingAddress
+      ? `/addresses/${editingAddress.id}`
+      : `/addresses`;
 
-      const method = editingAddress ? "PUT" : "POST"
+    const method = editingAddress ? "put" : "post";
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(form),
-      })
+    // ✅ Use Axios instead of fetch
+    const res = await API({
+      url,
+      method,
+      data: form, // Axios automatically stringifies JSON
+    });
 
-      if (!res.ok) throw new Error()
-
-      toast.success(
-        editingAddress ? "Address updated" : "Address added"
-      )
-      setIsDialogOpen(false)
-      fetchAddresses()
-    } catch {
-      toast.error("Failed to save address")
-    } finally {
-      toast.dismiss(toastId)
-    }
+    toast.success(editingAddress ? "Address updated" : "Address added");
+    setIsDialogOpen(false);
+    fetchAddresses(); // refresh the list
+  } catch (err: any) {
+    // Axios error already handled by interceptor for 401/403
+    toast.error(err.response?.data?.message || "Failed to save address");
+  } finally {
+    toast.dismiss(toastId);
   }
+};
+
 
   /* ================= UI ================= */
   return (

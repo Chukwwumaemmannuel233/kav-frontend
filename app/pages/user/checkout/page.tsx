@@ -5,6 +5,7 @@ import { Button } from "../../../components/ui/button";
 import { Lock } from "lucide-react";
 import { useCart } from "../../../../lib/cart-context";
 import { toast } from "sonner";
+import API from "@/lib/api";
 
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -51,65 +52,53 @@ export default function CheckoutPage() {
   }, [uiError]);
 
   /* ---------------- FETCH ADDRESSES ---------------- */
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/addresses`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        const data = await res.json();
-
-        if (data.addresses?.length) {
-          const defaultAddress =
-            data.addresses.find((a: Address) => a.is_default) ||
-            data.addresses[0];
-
-          setAddress(defaultAddress);
-          setShowAddressForm(false);
-        } else {
-          setShowAddressForm(true);
-        }
-      } catch {
-        setShowAddressForm(true);
-      } finally {
-        setLoadingAddress(false);
-      }
-    };
-
-    fetchAddresses();
-  }, []);
-
-  /* ---------------- Save Address ---------------- */
-
-  const saveAddress = async () => {
+ useEffect(() => {
+  const fetchAddresses = async () => {
     try {
-      if (!formData.full_name || !formData.phone || !formData.street_address) {
-        setUiError("Please fill all required address fields");
-        return;
+      const res = await API.get("/addresses"); // Axios automatically includes token
+      const data = res.data;
+
+      if (data.addresses?.length) {
+        const defaultAddress =
+          data.addresses.find((a: Address) => a.is_default) ||
+          data.addresses[0];
+
+        setAddress(defaultAddress);
+        setShowAddressForm(false);
+      } else {
+        setShowAddressForm(true);
       }
-
-      const res = await fetch(`${API_BASE}/addresses`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      setAddress(data.address); // 🔥 THIS FIXES PAY ISSUE
-      setShowAddressForm(false);
-      setUiError(null);
     } catch (err: any) {
-      setUiError(err.message || "Failed to save address");
+      // Axios interceptor handles token expiration / deactivation
+      console.error(err.response?.data?.message || "Failed to fetch addresses");
+      setShowAddressForm(true);
+    } finally {
+      setLoadingAddress(false);
     }
   };
+
+  fetchAddresses();
+}, []);
+  /* ---------------- Save Address ---------------- */
+
+ const saveAddress = async () => {
+  try {
+    if (!formData.full_name || !formData.phone || !formData.street_address) {
+      setUiError("Please fill all required address fields");
+      return;
+    }
+
+    const res = await API.post("/addresses", formData);
+
+    setAddress(res.data.address); // Axios automatically parses JSON
+    setShowAddressForm(false);
+    setUiError(null);
+    toast.success("Address saved");
+  } catch (err: any) {
+    // Axios interceptor will handle token/deactivated issues
+    setUiError(err.response?.data?.message || "Failed to save address");
+  }
+};
 
   /* ---------------- CALCULATIONS ---------------- */
   const subtotal = cartItems.reduce(
@@ -122,63 +111,40 @@ export default function CheckoutPage() {
   const total = subtotal;
 
   /* ---------------- PAYSTACK ---------------- */
-  const handlePay = async () => {
+ const handlePay = async () => {
   if (!address) return toast.error("Add delivery address");
 
   try {
     setLoadingPayment(true);
 
     // 1️⃣ Create order
-   const checkoutRes = await fetch(`${API_BASE}/checkout`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-  body: JSON.stringify({
-    address_id: address.id,
-
-    // ✅ ADD THIS
-    items: cartItems.map(item => ({
-      product_id: item.productId,
-      variant_id: item.variantId,
-      name: item.name,
-      variant_type: item.variantType,
-      price: item.price,
-      quantity: item.quantity,
-      image: item.image,
-    })),
-  }),
-});
-
-
-    const checkoutData = await checkoutRes.json();
-    if (!checkoutRes.ok) throw new Error(checkoutData.message);
-
-    // 2️⃣ Init Paystack
-    const payRes = await fetch(`${API_BASE}/payments/init`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({
-        order_id: checkoutData.order.id,
-      }),
+    const checkoutRes = await API.post("/checkout", {
+      address_id: address.id,
+      items: cartItems.map(item => ({
+        product_id: item.productId,
+        variant_id: item.variantId,
+        name: item.name,
+        variant_type: item.variantType,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image,
+      })),
     });
 
-    const payData = await payRes.json();
-    if (!payRes.ok) throw new Error(payData.message);
+    // 2️⃣ Init Paystack
+    const payRes = await API.post("/payments/init", {
+      order_id: checkoutRes.data.order.id,
+    });
 
     // 3️⃣ Redirect to Paystack
-    window.location.href = payData.authorization_url;
-
+    window.location.href = payRes.data.authorization_url;
   } catch (err: any) {
-    toast.error(err.message || "Payment failed");
+    toast.error(err.response?.data?.message || "Payment failed");
   } finally {
     setLoadingPayment(false);
   }
 };
+
 
   return (
     <div className="min-h-screen bg-white">

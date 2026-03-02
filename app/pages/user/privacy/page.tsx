@@ -84,7 +84,7 @@ export default function PrivacyPolicy() {
             <section id="introduction">
               <h2 className="text-2xl font-bold mb-4">INTRODUCTION</h2>
               <p className="text-neutral-700 leading-relaxed mb-4">
-                Welcome to TextileCo. We are committed to protecting your personal information and your right to
+                Welcome to K.A.V Textile. We are committed to protecting your personal information and your right to
                 privacy. If you have any questions or concerns about our policy, or our practices with regards to your
                 personal information, please contact us.
               </p>
@@ -222,14 +222,14 @@ export default function PrivacyPolicy() {
             <section id="contact" className="pb-8">
               <h2 className="text-2xl font-bold mb-4">CONTACT INFORMATION</h2>
               <p className="text-neutral-700 leading-relaxed mb-6">
-                If you have questions or comments about this policy, you may email us at privacy@textileco.com or by
+                If you have questions or comments about this policy, you may email us at privacy@K.A.V Textile.com or by
                 post to:
               </p>
               <div className="bg-neutral-50 p-6 rounded text-sm text-neutral-700 space-y-1">
-                <p>TextileCo</p>
-                <p>123 Fabric Lane</p>
-                <p>Weavertonville, TX 78701</p>
-                <p>United States</p>
+                <p>K.A.V Textile</p>
+                <p>123 Brown strt</p>
+                <p>Oshodi, Lagos 78701</p>
+                <p>Nigeria</p>
               </div>
             </section>
           </div>
@@ -239,7 +239,7 @@ export default function PrivacyPolicy() {
       {/* Footer */}
       <footer className="bg-neutral-50 border-t border-neutral-200 py-8 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-neutral-600">
-          <div>© 2025 TextileCo. All rights reserved.</div>
+          <div>© 2025 K.A.V Textile. All rights reserved.</div>
           <div className="flex gap-6">
             <Link href="/terms" className="hover:text-neutral-900 transition">
               Terms of Service

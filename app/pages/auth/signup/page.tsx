@@ -7,6 +7,7 @@ import { Button } from "../../../components/ui/button";
 import { useRouter } from "next/navigation"; //
 import { signup } from "@/lib/auth.api";
 import { toast } from "sonner";
+import AuthHeader from "../../../components/AuthHeader";
 
 export default function SignUpPage() {
   const router = useRouter(); // ✅ INITIALIZE ROUTER
@@ -43,9 +44,11 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
-      {/* Compact Card */}
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-md">
+   <div className="min-h-screen bg-neutral-100">
+    <AuthHeader />
+
+    <div className="pt-28 px-4 pb-16">
+      <div className="max-w-md mx-auto w-full bg-white p-8 rounded-2xl shadow-md">
         <h1 className="text-2xl font-bold text-center mb-6 tracking-tight">
           Create Account
         </h1>
@@ -155,6 +158,7 @@ export default function SignUpPage() {
           </p>
         </form>
       </div>
+    </div>
     </div>
   );
 }

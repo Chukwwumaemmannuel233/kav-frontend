@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { getNewArrivals } from "@/lib/products";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import API from "@/lib/api"; // ✅ use axios instance
 
 interface Product {
   id: number;
@@ -13,8 +14,6 @@ interface Product {
   price: number;
   isFavorited?: boolean;
 }
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function NewArrivalsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -32,14 +31,7 @@ export default function NewArrivalsPage() {
   ======================== */
   const fetchFavorites = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const res = await fetch(`${API_BASE}/favorites`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
+      const { data } = await API.get("/favorites");
       if (!data.success) return;
 
       const favoriteIds = data.favorites.map((f: any) => f.id);
@@ -51,7 +43,7 @@ export default function NewArrivalsPage() {
 
       setProducts([...productsRef.current]);
     } catch (err) {
-      console.error("Failed to fetch favorites");
+      console.error("Failed to fetch favorites", err);
     }
   };
 
@@ -68,10 +60,7 @@ export default function NewArrivalsPage() {
 
       const uniqueNew = data.products
         .filter((p: Product) => !productsRef.current.some((x) => x.id === p.id))
-        .map((p: Product) => ({
-          ...p,
-          isFavorited: false,
-        }));
+        .map((p: Product) => ({ ...p, isFavorited: false }));
 
       if (uniqueNew.length === 0) {
         setHasMore(false);
@@ -113,32 +102,23 @@ export default function NewArrivalsPage() {
   ======================== */
   const toggleFavorite = async (productId: number, currentStatus: boolean) => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
       setLoadingIds((prev) => [...prev, productId]);
 
-      await fetch(
-        currentStatus
-          ? `${API_BASE}/favorites/${productId}`
-          : `${API_BASE}/favorites`,
-        {
-          method: currentStatus ? "DELETE" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: currentStatus ? null : JSON.stringify({ productId }),
-        }
-      );
+      if (currentStatus) {
+        const { data } = await API.delete(`/favorites/${productId}`);
+        if (!data.success) throw new Error("Failed to remove favorite");
+      } else {
+        const { data } = await API.post(`/favorites`, { productId });
+        if (!data.success) throw new Error("Failed to add favorite");
+      }
 
       productsRef.current = productsRef.current.map((p) =>
         p.id === productId ? { ...p, isFavorited: !currentStatus } : p
       );
 
       setProducts([...productsRef.current]);
-    } catch (err) {
-      console.error("Failed to toggle favorite");
+    } catch (err: any) {
+      console.error("Failed to toggle favorite", err);
     } finally {
       setLoadingIds((prev) => prev.filter((id) => id !== productId));
     }
@@ -175,9 +155,7 @@ export default function NewArrivalsPage() {
 
             {/* CARD CLICK */}
             <div
-              onClick={() =>
-                router.push(`/pages/user/fabrics/${product.id}`)
-              }
+              onClick={() => router.push(`/pages/user/fabrics/${product.id}`)}
               className="cursor-pointer"
             >
               <span className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">
@@ -190,9 +168,7 @@ export default function NewArrivalsPage() {
                 className="h-40 w-full object-cover rounded"
               />
 
-              <h3 className="mt-2 font-semibold truncate">
-                {product.name}
-              </h3>
+              <h3 className="mt-2 font-semibold truncate">{product.name}</h3>
 
               <p className="text-sm text-neutral-600 line-clamp-2">
                 {product.description}

@@ -2,15 +2,9 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!API_BASE) {
-  throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
-}
+import API from "@/lib/api"; // Axios instance
 
 /* ================= TYPES ================= */
-
 export interface CartItem {
   productId: number;
   variantId?: number;
@@ -40,10 +34,7 @@ interface CartContextType {
     quantity: number,
     variantId?: number
   ) => Promise<void>;
-  removeFromCart: (
-    productId: number,
-    variantId?: number
-  ) => Promise<void>;
+  removeFromCart: (productId: number, variantId?: number) => Promise<void>;
   clearCart: () => Promise<void>;
   getTotalItems: () => number;
   refreshCart: () => Promise<void>;
@@ -53,31 +44,25 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | null>(null);
 
 /* ================= PROVIDER ================= */
-
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoggedOut, setIsLoggedOut] = useState(false);
 
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   useEffect(() => {
-    refreshCart();
-  }, []);
+    // Only fetch cart if user is logged in
+    if (!isLoggedOut) refreshCart();
+  }, [isLoggedOut]);
 
   /* ================= FETCH CART ================= */
-
   const refreshCart = async () => {
     const token = getToken();
-    if (!token) return;
+    if (!token || isLoggedOut) return;
 
     try {
-      const res = await fetch(`${API_BASE}/cart`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
+      const { data } = await API.get("/cart");
       setItems(
         data.cart.map((item: any) => ({
           productId: item.product_id,
@@ -90,135 +75,99 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           stock: item.stock_quantity,
         }))
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load cart", err);
+      // If the error is 401/403, prevent further calls
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setIsLoggedOut(true);
+        setItems([]);
+        toast.error("Session expired. Please login again.");
+      }
     }
   };
 
   /* ================= ADD TO CART ================= */
-
   const addToCart = async (
     productId: number,
     quantity: number,
     variant?: VariantPayload
   ) => {
-    const token = getToken();
-    if (!token) {
-      toast.error("Please login first");
-      return;
-    }
+    if (isLoggedOut) return;
 
-    const res = await fetch(`${API_BASE}/cart`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
+    try {
+      await API.post("/cart", {
         productId,
         quantity,
         variantId: variant?.id,
-      }),
-    });
-
-    if (!res.ok) {
-      toast.error("Failed to add to cart");
-      return;
+      });
+      toast.success("Added to cart 🛒");
+      refreshCart();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to add to cart");
     }
-
-    toast.success("Added to cart 🛒");
-    refreshCart();
   };
 
   /* ================= UPDATE QUANTITY ================= */
-
   const updateQuantity = async (
     productId: number,
     quantity: number,
     variantId?: number
   ) => {
-    const token = getToken();
-    if (!token) return;
+    if (isLoggedOut) return;
 
     setItems((prev) =>
       prev.map((item) =>
-        item.productId === productId &&
-        item.variantId === variantId
+        item.productId === productId && item.variantId === variantId
           ? { ...item, quantity }
           : item
       )
     );
 
-    const res = await fetch(`${API_BASE}/cart`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({  productId, quantity, variantId }),
-    });
-
-    if (!res.ok) {
-      toast.error("Update failed");
+    try {
+      await API.put("/cart", { productId, quantity, variantId });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Update failed");
       refreshCart();
     }
   };
 
   /* ================= REMOVE ITEM ================= */
-
-  const removeFromCart = async (
-    productId: number,
-    variantId?: number
-  ) => {
-    const token = getToken();
-    if (!token) return;
+  const removeFromCart = async (productId: number, variantId?: number) => {
+    if (isLoggedOut) return;
 
     setItems((prev) =>
       prev.filter(
-        (item) =>
-          !(
-            item.productId === productId &&
-            item.variantId === variantId
-          )
+        (item) => !(item.productId === productId && item.variantId === variantId)
       )
     );
 
-    const res = await fetch(`${API_BASE}/cart`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ productId, variantId }),
-    });
-     toast.success("cart item removed");
-
-    if (!res.ok) {
-      toast.error("Remove failed");
+    try {
+      await API.delete("/cart", { data: { productId, variantId } });
+      toast.success("Cart item removed");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Remove failed");
       refreshCart();
     }
   };
 
   /* ================= CLEAR CART ================= */
-
   const clearCart = async () => {
-    const token = getToken();
-    if (!token) return;
+    if (isLoggedOut) return;
 
-    await fetch(`${API_BASE}/cart/clear/all`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    setItems([]);
-    toast.success("Cart cleared");
+    try {
+      await API.delete("/cart/clear/all");
+      setItems([]);
+      toast.success("Cart cleared");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to clear cart");
+    }
   };
 
-  const forceClearCart = () => {
-  setItems([]);
-};
+  const forceClearCart = () => setItems([]);
 
  const getTotalItems = () => items.length;
+
 
   return (
     <CartContext.Provider
@@ -239,7 +188,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 }
 
 /* ================= HOOK ================= */
-
 export function useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error("useCart must be used inside CartProvider");

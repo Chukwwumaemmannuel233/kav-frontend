@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { Button } from "./components/ui/button";
 import SiteHeader from "./components/site-header";
-import { Instagram, Facebook, Twitter, Youtube } from "lucide-react";
+import { Instagram, Facebook, Twitter, Music2 } from "lucide-react";
 import { useLoading } from "@/lib/loading-context";
 
 export default function Home() {
@@ -128,7 +128,7 @@ export default function Home() {
               variants={itemVariants}
               className="flex justify-center gap-4"
             >
-              {[Instagram, Facebook, Twitter, Youtube].map((Icon, i) => (
+              {[Instagram, Facebook, Twitter, Music2].map((Icon, i) => (
                 <motion.a
                   key={i}
                   href="#"

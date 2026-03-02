@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import API from "@/lib/api";
 
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 interface ApiProduct {
   id: number;
@@ -64,8 +63,24 @@ export default function Dashboard() {
   const [recommendationReason, setRecommendationReason] = useState("");
   const [journalPosts, setJournalPosts] = useState<JournalPost[]>([]);
 const [loadingJournal, setLoadingJournal] = useState(true);
+const [userName, setUserName] = useState<string>("");
 
 
+useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const { data } = await API.get("/user/profile");
+
+      if (data?.user?.name) {
+        setUserName(data.user.name);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user profile");
+    }
+  };
+
+  fetchUser();
+}, []);
 
  useEffect(() => {
   API.get("/products/new-arrivals", { params: { limit: 4 } })
@@ -160,73 +175,54 @@ const [loadingJournal, setLoadingJournal] = useState(true);
 
   const [loadingFavIds, setLoadingFavIds] = useState<number[]>([]);
 
-  const fetchFavorites = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+ const fetchFavorites = async () => {
+  try {
+    const res = await API.get("/favorites");
+    const favIds = res.data.favorites.map((f: any) => f.id);
 
-      const res = await fetch(`${API_BASE}/favorites`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    setNewArrivals((prev) =>
+      prev.map((p) => ({
+        ...p,
+        isFavorited: favIds.includes(p.id),
+      })),
+    );
+  } catch (err) {
+    console.error("Failed to fetch favorites");
+  }
+};
 
-      const data = await res.json();
-      if (!data.success) return;
+const toggleFavorite = async (productId: number, isFavorited: boolean) => {
+  try {
+    setLoadingFavIds((prev) => [...prev, productId]);
 
-      const favIds = data.favorites.map((f: any) => f.id);
-
-      setNewArrivals((prev) =>
-        prev.map((p) => ({
-          ...p,
-          isFavorited: favIds.includes(p.id),
-        })),
-      );
-    } catch (err) {
-      console.error("Failed to fetch favorites");
+    if (isFavorited) {
+      await API.delete(`/favorites/${productId}`);
+    } else {
+      await API.post(`/favorites`, { productId });
     }
-  };
 
-  const toggleFavorite = async (productId: number, isFavorited: boolean) => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+    setNewArrivals((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, isFavorited: !isFavorited } : p,
+      ),
+    );
+  } catch (err) {
+    console.error("Failed to toggle favorite");
+  } finally {
+    setLoadingFavIds((prev) => prev.filter((id) => id !== productId));
+  }
+};
 
-      setLoadingFavIds((prev) => [...prev, productId]);
-
-      await fetch(
-        isFavorited
-          ? `${API_BASE}/favorites/${productId}`
-          : `${API_BASE}/favorites`,
-        {
-          method: isFavorited ? "DELETE" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: isFavorited ? null : JSON.stringify({ productId }),
-        },
-      );
-
-      setNewArrivals((prev) =>
-        prev.map((p) =>
-          p.id === productId ? { ...p, isFavorited: !isFavorited } : p,
-        ),
-      );
-    } catch (err) {
-      console.error("Failed to toggle favorite");
-    } finally {
-      setLoadingFavIds((prev) => prev.filter((id) => id !== productId));
-    }
-  };
 
   return (
     <div className="bg-white min-h-screen">
       <SiteHeader variant="user" />
 
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="mb-12 text-center md:mb-16">
-            <h1 className="text-4xl font-bold leading-tight tracking-tight text-black sm:text-5xl lg:text-6xl">
-              Welcome Back, Maria
+            <h1 className="text-3xl font-bold leading-tight tracking-tight text-black sm:text-5xl lg:text-6xl">
+               Welcome Back{userName ? `, ${userName}` : ""} 
             </h1>
             <p className="mt-3 text-base font-normal text-neutral-600 sm:text-lg">
               Your curated space for inspiration and new arrivals.
@@ -424,7 +420,7 @@ const [loadingJournal, setLoadingJournal] = useState(true);
                   From the Journal
                 </h2>
                 <Link
-                  href="/pages/user/journal"
+                  href="/pages/user/Journal"
                   className="text-sm font-medium text-black/80 hover:underline"
                 >
                   Read All
@@ -432,7 +428,7 @@ const [loadingJournal, setLoadingJournal] = useState(true);
               </div>
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 {journalPosts.map((post) => (
-                  <Link key={post.id} href="#" className="group">
+                  <Link key={post.id}  href={`/pages/user/Journal/${post.id}`} className="group">
                     <div className="aspect-video w-full overflow-hidden rounded-lg bg-neutral-200">
                       <img
                         src={post.image || "/placeholder.svg"}
