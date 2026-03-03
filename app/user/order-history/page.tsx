@@ -174,7 +174,7 @@ export default function OrderHistory() {
                   <div className="flex justify-between pt-2">
                     <button
                       onClick={() =>
-                        router.push(`/pages/user/order-history/${order.id}`)
+                        router.push(`/user/order-history/${order.id}`)
                       }
                       className="text-sm font-semibold hover:underline"
                     >
@@ -200,7 +200,7 @@ export default function OrderHistory() {
                   <div className="col-span-3 flex items-center justify-end">
                     <button
                       onClick={() =>
-                        router.push(`/pages/user/order-history/${order.id}`)
+                        router.push(`/user/order-history/${order.id}`)
                       }
                       className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-neutral-100"
                     >

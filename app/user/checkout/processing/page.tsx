@@ -23,7 +23,7 @@ export default function PaymentProcessingPage() {
     // Redirect after completion (simulate 5 second processing)
     const redirectTimer = setTimeout(() => {
       // Navigate to success page or order confirmation
-      router.push("/pages/user/checkout/success")
+      router.push("/user/checkout/success")
     }, 5000)
 
     return () => {

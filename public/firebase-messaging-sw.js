@@ -41,7 +41,7 @@ self.addEventListener("notificationclick", function (event) {
     clients.matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
-          if (client.url.includes("/pages/admin") && "focus" in client) {
+          if (client.url.includes("/admin") && "focus" in client) {
             client.focus();
             client.navigate(link);
             return;

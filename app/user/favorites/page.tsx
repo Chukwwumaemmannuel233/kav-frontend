@@ -137,7 +137,7 @@ export default function FavoritesPage() {
                     </p>
 
                     <Link
-                      href={`/pages/user/fabrics/${item.id}`}
+                      href={`/user/fabrics/${item.id}`}
                       className="text-sm text-neutral-600 hover:text-black transition-colors mb-3 inline-block"
                     >
                       View Details

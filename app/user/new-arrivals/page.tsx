@@ -155,7 +155,7 @@ export default function NewArrivalsPage() {
 
             {/* CARD CLICK */}
             <div
-              onClick={() => router.push(`/pages/user/fabrics/${product.id}`)}
+              onClick={() => router.push(`/user/fabrics/${product.id}`)}
               className="cursor-pointer"
             >
               <span className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">

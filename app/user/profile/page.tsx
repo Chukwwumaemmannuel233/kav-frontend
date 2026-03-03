@@ -49,7 +49,7 @@ export default function AccountPage() {
 
           // ✅ Redirect
           setTimeout(() => {
-            router.push("/pages/auth/login");
+            router.push("/auth/login");
           }, 1000);
         },
       },
@@ -69,35 +69,35 @@ export default function AccountPage() {
       title: "Account Details",
       description: "Manage your name, email, and password.",
       icon: User,
-      href: "/pages/user/account-details",
+      href: "/user/account-details",
     },
     {
       id: "orders",
       title: "Order History",
       description: "View and track your past orders.",
       icon: ShoppingBag,
-      href: "/pages/user/order-history",
+      href: "/user/order-history",
     },
     {
       id: "favorites",
       title: "My Favorites",
       description: "Access your saved items.",
       icon: Heart,
-      href: "/pages/user/favorites",
+      href: "/user/favorites",
     },
     {
       id: "addresses",
       title: "Saved Addresses",
       description: "Manage your shipping and billing addresses.",
       icon: MapPin,
-      href: "/pages/user/addresses",
+      href: "/user/addresses",
     },
     // {
     //   id: "payment",
     //   title: "Payment Methods",
     //   description: "Manage your saved credit cards.",
     //   icon: CreditCard,
-    //   href: "/pages/user/payment-method",
+    //   href: "/user/payment-method",
     // },
   ];
 

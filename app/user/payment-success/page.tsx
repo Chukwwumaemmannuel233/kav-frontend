@@ -208,7 +208,7 @@ function PaymentSuccessPageContent() {
 
       <Button
         onClick={() =>
-          router.push("/pages/user/dashboard")
+          router.push("/user/dashboard")
         }
         className="bg-black text-white mt-6 px-6 py-3 rounded-lg"
       >

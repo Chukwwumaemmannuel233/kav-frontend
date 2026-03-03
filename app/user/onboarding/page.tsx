@@ -20,37 +20,37 @@ export default function OnboardingPage() {
       title: "Go to Dashboard",
       description: "Manage your account and orders",
       icon: LayoutDashboard,
-      path: "/pages/user/dashboard",
+      path: "/user/dashboard",
     },
     {
       title: "Explore Fabrics",
       description: "Browse premium textile collections",
       icon: ShoppingBag,
-      path: "/pages/user/fabrics",
+      path: "/user/fabrics",
     },
     {
       title: "About Us",
       description: "Learn more about KAV Textiles",
       icon: Info,
-      path: "/pages/user/about",
+      path: "/user/about",
     },
     {
       title: "Contact",
       description: "Get in touch with us",
       icon: Mail,
-      path: "/pages/user/contact",
+      path: "/user/contact",
     },
     {
       title: "New Arrivals",
       description: "Check our latest fabrics",
       icon: Star,
-      path: "/pages/user/new-arrivals",
+      path: "/user/new-arrivals",
     },
     {
       title: "Profile Update",
       description: "Edit your account details",
       icon: User,
-      path: "/pages/user/profile",
+      path: "/user/profile",
     },
   ];
 
@@ -74,7 +74,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
+    <main className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden py-20">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"

@@ -15,7 +15,7 @@ export default function AboutPage() {
     e.preventDefault();
     setIsExplore(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
-    router.push("/pages/user/fabrics");
+    router.push("/user/fabrics");
   };
 
   /* =====================
@@ -247,10 +247,10 @@ export default function AboutPage() {
       {/* ================= FOOTER ================= */}
       <footer className="border-t border-neutral-200 px-6 md:px-16 py-20 bg-white text-center">
         <div className="flex justify-center gap-6 text-sm text-neutral-600 mb-4">
-          <a href="/pages/user/terms" className="hover:text-black transition">
+          <a href="/user/terms" className="hover:text-black transition">
             Terms of Service
           </a>
-          <a href="/pages/user/privacy" className="hover:text-black transition">
+          <a href="/user/privacy" className="hover:text-black transition">
             Privacy Policy
           </a>
         </div>

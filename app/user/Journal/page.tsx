@@ -56,7 +56,7 @@ export default function JournalPage() {
           {posts.map((post) => (
             <Link
               key={post.id}
-              href={`/pages/user/Journal/${post.id}`}
+              href={`/user/Journal/${post.id}`}
               className="group"
             >
               <div className="aspect-[4/3] overflow-hidden rounded-lg bg-neutral-200">

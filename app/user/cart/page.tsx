@@ -26,13 +26,13 @@ export default function CartPage() {
   const handleCheckout = async () => {
     setIsCheckingOut(true);
     await new Promise((r) => setTimeout(r, 800));
-    window.location.href = "/pages/user/checkout";
+    window.location.href = "/user/checkout";
   };
 
   const shop = async () => {
     setIsBack(true);
     await new Promise((r) => setTimeout(r, 800));
-    window.location.href = "/pages/user/fabrics";
+    window.location.href = "/user/fabrics";
   };
 
  const handleRemove = async (

@@ -128,7 +128,7 @@ export default function ShippingReturnsPage() {
 
               {/* Start a Return Button */}
               <div className="pt-8">
-                <Link href="/pages/user/contact">
+                <Link href="/user/contact">
                   <button className="bg-black text-white px-8 py-3 font-semibold hover:bg-neutral-900 transition rounded-lg">
                     Start a Return
                   </button>

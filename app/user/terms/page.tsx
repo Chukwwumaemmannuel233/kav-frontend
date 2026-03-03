@@ -157,7 +157,7 @@ export default function TermsOfUsePage() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="/pages/user/privacy"
+                    href="/user/privacy"
                     className="text-neutral-600 hover:text-black text-sm transition"
                   >
                     Privacy Policy
@@ -165,7 +165,7 @@ export default function TermsOfUsePage() {
                 </li>
                 <li>
                   <Link
-                    href="/pages/user/shipping-info"
+                    href="/user/shipping-info"
                     className="text-neutral-600 hover:text-black text-sm transition"
                   >
                     Shipping Info
@@ -173,7 +173,7 @@ export default function TermsOfUsePage() {
                 </li>
                 <li>
                   <Link
-                    href="/pages/user/shipping-returns"
+                    href="/user/shipping-returns"
                     className="text-neutral-600 hover:text-black text-sm transition"
                   >
                     Returns & Exchanges

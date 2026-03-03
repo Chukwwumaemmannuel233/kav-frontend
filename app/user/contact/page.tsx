@@ -234,7 +234,7 @@ export default function ContactPage() {
                 FAQs
               </Link>
               <Link
-                href="/pages/user/shipping-returns"
+                href="/user/shipping-returns"
                 className="text-sm text-neutral-600 hover:text-neutral-900 transition"
               >
                 Shipping & Returns

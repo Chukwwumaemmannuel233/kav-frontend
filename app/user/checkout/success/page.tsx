@@ -18,7 +18,7 @@ export default function PaymentSuccessPage() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Redirect after login
-    router.push("/pages/user/order-history");
+    router.push("/user/order-history");
   };
 
   const shop = async (e: React.FormEvent) => {
@@ -29,7 +29,7 @@ export default function PaymentSuccessPage() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Redirect after login
-    router.push("/pages/user/fabrics");
+    router.push("/user/fabrics");
   };
 
   return (

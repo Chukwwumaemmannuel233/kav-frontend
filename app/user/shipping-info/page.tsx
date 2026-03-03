@@ -229,13 +229,13 @@ export default function ShippingInfoPage() {
             <div className="text-center">
               <h4 className="font-semibold mb-3 md:mb-4 text-sm md:text-base">Need Help?</h4>
               <div className="flex flex-wrap gap-4 md:gap-6 justify-center text-xs md:text-sm text-neutral-600">
-                <Link href="/pages/user/shipping-returns" className="hover:text-black transition">
+                <Link href="/user/shipping-returns" className="hover:text-black transition">
                   Returns
                 </Link>
-                <Link href="/pages/user/contact" className="hover:text-black transition">
+                <Link href="/user/contact" className="hover:text-black transition">
                   Contact Us
                 </Link>
-                <Link href="/pages/user/privacy" className="hover:text-black transition">
+                <Link href="/user/privacy" className="hover:text-black transition">
                   Privacy Policy
                 </Link>
               </div>
