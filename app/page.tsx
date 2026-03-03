@@ -16,13 +16,13 @@ export default function Home() {
   const handleSignup = async () => {
     setSignupLoading(true);
     await new Promise((r) => setTimeout(r, 600));
-    window.location.href = "/pages/auth/signup";
+    window.location.href = "/auth/signup";
   };
 
   const handleLogin = async () => {
     setLoginLoading(true);
     await new Promise((r) => setTimeout(r, 600));
-    window.location.href = "/pages/auth/login";
+    window.location.href = "/auth/login";
   };
 
   /* =====================
