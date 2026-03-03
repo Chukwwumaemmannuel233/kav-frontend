@@ -1,0 +1,456 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import SiteHeader from "../../components/site-header";
+import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import API from "@/lib/api";
+
+
+
+interface ApiProduct {
+  id: number;
+  name: string;
+  price: number;
+  image_url: string;
+  isFavorited?: boolean;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  color: string;
+  price: number;
+  image: string;
+}
+
+interface RecommendedProduct {
+  id: number;
+  name: string;
+  price: number;
+  image_url: string;
+}
+
+interface JournalPost {
+  id: number;
+  category: string;
+  title: string;
+  image: string;
+}
+
+interface FeaturedLookbook {
+  id: number;
+  title: string;
+  subtitle?: string;
+  image_urls: string[];
+  link?: string;
+}
+
+export default function Dashboard() {
+  const [newArrivals, setNewArrivals] = useState<ApiProduct[]>([]);
+  const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
+  const [navigating, setNavigating] = useState(false);
+
+  const [featuredLookbook, setFeaturedLookbook] =
+    useState<FeaturedLookbook | null>(null);
+  const [loadingLookbook, setLoadingLookbook] = useState(true);
+  const [recommendations, setRecommendations] = useState<RecommendedProduct[]>(
+    [],
+  );
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+
+  const [recommendationReason, setRecommendationReason] = useState("");
+  const [journalPosts, setJournalPosts] = useState<JournalPost[]>([]);
+const [loadingJournal, setLoadingJournal] = useState(true);
+const [userName, setUserName] = useState<string>("");
+
+
+useEffect(() => {
+  const fetchUser = async () => {
+    try {
+      const { data } = await API.get("/user/profile");
+
+      if (data?.user?.name) {
+        setUserName(data.user.name);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user profile");
+    }
+  };
+
+  fetchUser();
+}, []);
+
+ useEffect(() => {
+  API.get("/products/new-arrivals", { params: { limit: 4 } })
+    .then((res) => {
+      const products = (res.data.products || []).map((p: ApiProduct) => ({
+        ...p,
+        isFavorited: false,
+      }));
+      setNewArrivals(products);
+      fetchFavorites(); // keep as-is
+    })
+    .catch(console.error)
+    .finally(() => setLoadingNewArrivals(false));
+}, []);
+
+
+ useEffect(() => {
+  API.get("/lookbook/featured")
+    .then((res) => {
+      if (res.data.success && res.data.lookbook?.image_urls?.length) {
+        setFeaturedLookbook(res.data.lookbook);
+      } else {
+        setFeaturedLookbook(null);
+      }
+    })
+    .catch(console.error)
+    .finally(() => setLoadingLookbook(false));
+}, []);
+
+
+  useEffect(() => {
+  API.get("/recommendations")
+    .then((res) => {
+      if (res.data.success) {
+        setRecommendations(res.data.products || []);
+        setRecommendationReason(res.data.reason || "Just for you");
+      }
+    })
+    .catch(() => {
+      console.error("Failed to fetch recommendations");
+    })
+    .finally(() => setLoadingRecommendations(false));
+}, []);
+
+
+
+ useEffect(() => {
+  API.get("/journal", { params: { limit: 2 } })
+    .then((res) => {
+      if (res.data.success) {
+        setJournalPosts(res.data.posts.slice(0, 2));
+      }
+    })
+    .catch(console.error)
+    .finally(() => setLoadingJournal(false));
+}, []);
+
+
+  // const recommendedProducts: RecommendedProduct[] = [
+  //   {
+  //     id: 1,
+  //     title: "The Classic Denim Jacket",
+  //     description: "Because you loved our City Trousers",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuB0WtMYyK6O6yFRCtHnG7ZCgftY4QeJw3_DNMmA-W6TZAcdtnwo4Cd6J2qhSPAA-v_WaaeDNAe6_-UhHtpxLgcr0BhKTbMuSLmU2-grx9nrsdtI3IC0tGJfFGqdnI4K46Ew_SpoP0sSqv1W_rN8eCSDFJTeXpJT1tK_wQBE_kh5JqBdAWOWNcL3kCIwYFzvbJ6iOojwPlr58jausx8oWg_LJajxQCmNjOs5BwwWPh2GpWMv2SJA3PBnnwgM3VCvtI4Vb26EvjYD7857",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "Washed Silk Blouse",
+  //     description: "A perfect match for linen",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBFH29jb3fV2Uoql9tQZTeojyHoikzbS_StjvM-C38y5418j2AnJMrHqqyKvH5l3rzV-kctycdgCmlYDu-Xkbl5x-6jQw6AJnGvXsNLlEQUJwVYOQ-meWiEAB07xSR8J3doVq8czG2G9WLp_AyN0SOc01O39Jz2kOQnNWrdyNd5BOS86DESP8BycNKO5FQ-C6TUbKCcHc-QxLfBF7BfHOPQUAlSXdrLhdbNZUYcswWcjG2KaUlQ1SZGveGO01ha0P5PA6-o5HVkyblR",
+  //   },
+  // ];
+
+  // const journalPosts: JournalPost[] = [
+  //   {
+  //     id: 1,
+  //     category: "Style Guide",
+  //     title: "The Art of Layering: A Guide to Transitional Weather",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuDbXxUfuBw4DpFY0vGuflMCgYsNTy6wzjTv2r630c48fAeUpwfhi9TXBkY8xH8-_G2ZUd0SfnQswmncbFZu6yymOkk1uTwf0vrC4mHzR0gIrV5v9lFnzIIlVuoBxr3j3aYG-Fn9mEKjxVo9w46IQsNpMwtBa_Zpb32PjxxV1yAAHiPA4frW47ZvfVJ6G1WaJoCbIY2JdK8RWyYxGCHSepRl0ydt2cEFYP3Yu6wBJPl8q8MzRFfvfRxRcjw-FRAiV6ct31lczAORaybD",
+  //   },
+  //   {
+  //     id: 2,
+  //     category: "Fabric Care",
+  //     title: "How to Care For Your Merino Wool Pieces",
+  //     image:
+  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCsYL-WL36HTht-0VXZfdTDhg-zHktQ6pgUMRxXO2M9_0iGcnvn-c9Rdnd7aYvgScbPkqW5AyHMWiqJgk_hiRBYBi45-IUXCgrFtLRXRNMnd-hLAPlm5VBi_e_VS1uy1O_7s5CF91sKgu4SRf-Ttjxcpn5IncFYY6uMKn_tnXqNsAQ1OtpqpKoiFFfdvaWhv3aHDL3WJSyF_-bjOoPt7ZmTPEoj9d50iTFXnh_mldAff9I56qihAYsCTZNQAiX7y2Eny_0swwzsLhZk",
+  //   },
+  // ];
+
+  const [loadingFavIds, setLoadingFavIds] = useState<number[]>([]);
+
+ const fetchFavorites = async () => {
+  try {
+    const res = await API.get("/favorites");
+    const favIds = res.data.favorites.map((f: any) => f.id);
+
+    setNewArrivals((prev) =>
+      prev.map((p) => ({
+        ...p,
+        isFavorited: favIds.includes(p.id),
+      })),
+    );
+  } catch (err) {
+    console.error("Failed to fetch favorites");
+  }
+};
+
+const toggleFavorite = async (productId: number, isFavorited: boolean) => {
+  try {
+    setLoadingFavIds((prev) => [...prev, productId]);
+
+    if (isFavorited) {
+      await API.delete(`/favorites/${productId}`);
+    } else {
+      await API.post(`/favorites`, { productId });
+    }
+
+    setNewArrivals((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, isFavorited: !isFavorited } : p,
+      ),
+    );
+  } catch (err) {
+    console.error("Failed to toggle favorite");
+  } finally {
+    setLoadingFavIds((prev) => prev.filter((id) => id !== productId));
+  }
+};
+
+
+  return (
+    <div className="bg-white min-h-screen">
+      <SiteHeader variant="user" />
+
+      <main className="flex-1">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center md:mb-16">
+            <h1 className="text-3xl font-bold leading-tight tracking-tight text-black sm:text-5xl lg:text-6xl">
+               Welcome Back{userName ? `, ${userName}` : ""} 
+            </h1>
+            <p className="mt-3 text-base font-normal text-neutral-600 sm:text-lg">
+              Your curated space for inspiration and new arrivals.
+            </p>
+          </div>
+
+          <div className="space-y-16">
+            {/* New Arrivals Section */}
+            <section>
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
+                  New Arrivals
+                </h2>
+                <div className="flex items-center gap-3">
+                  {navigating && (
+                    <span className="text-sm text-neutral-500 animate-pulse">
+                      Loading…
+                    </span>
+                  )}
+
+                  <Link
+                    href="/pages/user/new-arrivals"
+                    onClick={() => setNavigating(true)}
+                    className="text-sm font-medium text-black/80 hover:underline"
+                  >
+                    View All
+                  </Link>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+                {loadingNewArrivals && <p>Loading new arrivals...</p>}
+
+                {!loadingNewArrivals && newArrivals.length === 0 && (
+                  <p>No new arrivals yet.</p>
+                )}
+
+                {newArrivals.map((product) => (
+                  <div key={product.id} className="group relative">
+                    <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-neutral-200 relative">
+                      {/* ❤️ FAVORITE */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(
+                            product.id,
+                            product.isFavorited || false,
+                          );
+                        }}
+                        disabled={loadingFavIds.includes(product.id)}
+                        className="absolute top-3 right-3 z-10 bg-white rounded-full p-2 shadow hover:bg-neutral-100 transition disabled:opacity-50"
+                      >
+                        <Heart
+                          size={18}
+                          className={
+                            product.isFavorited
+                              ? "fill-red-500 text-red-500"
+                              : "text-neutral-600"
+                          }
+                        />
+                      </button>
+
+                      <img
+                        src={product.image_url || "/placeholder.svg"}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+
+                      {/* NEW badge */}
+                      <span className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">
+                        NEW
+                      </span>
+                    </div>
+
+                    <div className="mt-2 text-sm">
+                      <h3 className="font-medium text-black truncate">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 font-medium text-black/90">
+                        ₦{Number(product.price || 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Featured Lookbook Section */}
+            <section>
+              {loadingLookbook && (
+                <div className="aspect-[16/9] rounded-lg bg-neutral-200 animate-pulse" />
+              )}
+
+              {!loadingLookbook && featuredLookbook && (
+                <Link href={featuredLookbook.link || "#"} className="block">
+                  <div className="relative overflow-hidden rounded-lg">
+                    <div className="flex w-max animate-scroll-lookbook">
+                      {[
+                        ...featuredLookbook.image_urls,
+                        ...featuredLookbook.image_urls,
+                      ].map((img, index) => (
+                        <div
+                          key={index}
+                          className="shrink-0 w-screen max-w-[1400px] aspect-[16/9] lg:aspect-[21/9]"
+                        >
+                          <img
+                            src={img}
+                            alt={featuredLookbook.title}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
+                    {/* Text */}
+                    <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 z-10 text-white">
+                      <p className="text-sm uppercase tracking-widest">
+                        Featured Lookbook
+                      </p>
+                      <h3 className="mt-1 text-3xl font-bold sm:text-4xl">
+                        {featuredLookbook.title}
+                      </h3>
+                      {featuredLookbook.subtitle && (
+                        <p className="mt-1 text-sm text-white/90">
+                          {featuredLookbook.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              )}
+
+              {!loadingLookbook && !featuredLookbook && (
+                <p className="text-center text-neutral-500">
+                  No featured lookbook yet.
+                </p>
+              )}
+            </section>
+
+            {/* Just For You Section */}
+            <section>
+              <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
+                <div className="md:col-span-1">
+                  <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
+                    Just For You
+                  </h2>
+                  <p className="text-xs text-neutral-500">
+                    {recommendationReason}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:col-span-2">
+                  {loadingRecommendations && <p>Loading recommendations…</p>}
+
+                  {!loadingRecommendations && recommendations.length === 0 && (
+                    <p className="text-neutral-500">
+                      No recommendations yet. Start exploring products.
+                    </p>
+                  )}
+
+                  {recommendations.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/pages/user/products/${product.id}`}
+                      className="group flex items-center gap-4 rounded-lg bg-neutral-100/50 p-4 hover:bg-neutral-100 transition"
+                    >
+                      <div className="aspect-square w-20 flex-shrink-0 overflow-hidden rounded-md bg-neutral-200">
+                        <img
+                          src={product.image_url || "/placeholder.svg"}
+                          alt={product.name}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+
+                      <div>
+                        <h3 className="text-base font-medium leading-tight text-black group-hover:underline">
+                          {product.name}
+                        </h3>
+                        <p className="text-sm font-medium text-black/80">
+                          ₦{Number(product.price).toLocaleString()}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* From the Journal Section */}
+            <section>
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
+                  From the Journal
+                </h2>
+                <Link
+                  href="/pages/user/Journal"
+                  className="text-sm font-medium text-black/80 hover:underline"
+                >
+                  Read All
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {journalPosts.map((post) => (
+                  <Link key={post.id}  href={`/pages/user/Journal/${post.id}`} className="group">
+                    <div className="aspect-video w-full overflow-hidden rounded-lg bg-neutral-200">
+                      <img
+                        src={post.image || "/placeholder.svg"}
+                        alt={post.title}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-sm uppercase tracking-wider text-neutral-600">
+                        {post.category}
+                      </p>
+                      <h3 className="mt-1 text-lg font-medium leading-tight text-black group-hover:underline">
+                        {post.title}
+                      </h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
