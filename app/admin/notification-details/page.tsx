@@ -39,7 +39,7 @@ export default function NotificationDetails() {
 
 
     // Redirect after login
-    router.push("/pages/admin/inventory-management");
+    router.push("/admin/inventory-management");
   };
 
   const handleBack = () => {

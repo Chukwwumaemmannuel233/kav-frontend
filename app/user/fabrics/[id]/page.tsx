@@ -114,8 +114,8 @@ export default function ProductPage() {
     <main className="bg-white min-h-screen">
       <div className="px-6 md:px-16 py-6 border-b">
         <nav className="text-sm text-neutral-600">
-          <Link href="/pages/user/dashboard">Home</Link> /{" "}
-          <Link href="/pages/user/fabrics">Fabrics</Link> /{" "}
+          <Link href="/user/dashboard">Home</Link> /{" "}
+          <Link href="/user/fabrics">Fabrics</Link> /{" "}
           <span className="text-black">{product.name}</span>
         </nav>
       </div>

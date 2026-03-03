@@ -35,7 +35,7 @@ export default function SignUpPage() {
       }
       toast.success("Account created successfully", { duration: 1500 });
 
-      router.push("/pages/user/onboarding");
+      router.push("/user/onboarding");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Signup failed", { duration: 1500 });
     } finally {
@@ -150,7 +150,7 @@ export default function SignUpPage() {
           <p className="text-center text-sm text-neutral-600 mt-4">
             Already have an account?{" "}
             <Link
-              href="/pages/auth/login"
+              href="/auth/login"
               className="text-black font-semibold hover:opacity-70"
             >
               Log In

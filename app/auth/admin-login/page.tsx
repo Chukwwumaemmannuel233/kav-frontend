@@ -31,7 +31,7 @@ export default function LoginPage() {
 
     toast.success("Login successful");
 
-    router.push("/pages/admin/dashboard");
+    router.push("/admin/dashboard");
   } catch (error: any) {
     toast.error(
       error?.response?.data?.message || "Login failed"
@@ -116,7 +116,7 @@ export default function LoginPage() {
           <span className="text-neutral-400 text-sm">
             New to our site?{" "}
             <Link
-              href="/pages/auth/signup"
+              href="/auth/signup"
               className="text-neutral-900 font-semibold hover:underline transition"
             >
               Sign Up

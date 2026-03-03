@@ -71,7 +71,7 @@ export default function AdminProfilePage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
-             <Link href="/pages/admin/settings">
+             <Link href="/admin/settings">
             <Button
               isLoading={isEditing}
               loadingText="Loading..."

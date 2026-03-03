@@ -49,7 +49,7 @@ API.interceptors.response.use(
         localStorage.removeItem("token");
         localStorage.removeItem("user");
 
-        window.location.href = "/pages/auth/login";
+        window.location.href = "/auth/login";
       }
     }
 

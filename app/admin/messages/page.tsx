@@ -98,7 +98,7 @@ export default function MessagesPage() {
 
             {/* BUTTONS: FABRIC REQUESTS */}
             <div className="flex gap-4">
-              <Link href="/pages/admin/fabric-requests">
+              <Link href="/admin/fabric-requests">
                 <button className="relative bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-700">
                   <Package size={18} />
                   Fabric Requests

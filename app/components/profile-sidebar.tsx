@@ -13,11 +13,11 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: "Profile", href: "/pages/user/profile", icon: <User size={20} /> },
-  { name: "Order History", href: "/pages/user/orders", icon: <ShoppingBag size={20} /> },
-  { name: "Addresses", href: "/pages/user/addresses", icon: <MapPin size={20} /> },
-  { name: "Payment Methods", href: "/pages/user/payment", icon: <CreditCard size={20} /> },
-  { name: "Settings", href: "/pages/user/settings", icon: <Settings size={20} /> },
+  { name: "Profile", href: "/user/profile", icon: <User size={20} /> },
+  { name: "Order History", href: "/user/orders", icon: <ShoppingBag size={20} /> },
+  { name: "Addresses", href: "/user/addresses", icon: <MapPin size={20} /> },
+  { name: "Payment Methods", href: "/user/payment", icon: <CreditCard size={20} /> },
+  { name: "Settings", href: "/user/settings", icon: <Settings size={20} /> },
 ]
 
 export default function ProfileSidebar({ onClose }: { onClose?: () => void }) {

@@ -19,7 +19,7 @@ export default function AdminLayout({
     const user = getUser();
 
     if (!user || user.role !== "admin") {
-      router.replace("/pages/auth/admin-login");
+      router.replace("/auth/admin-login");
     }
   }, [router]);
 

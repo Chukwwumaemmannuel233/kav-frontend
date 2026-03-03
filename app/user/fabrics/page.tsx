@@ -187,7 +187,7 @@ export default function FabricsPage() {
                   />
                 </button>
 
-                <Link href={`/pages/user/fabrics/${product.id}`}>
+                <Link href={`/user/fabrics/${product.id}`}>
                   <div className="relative bg-neutral-100 rounded-lg aspect-square overflow-hidden mb-3 cursor-pointer">
                     <img
                       src={product.image_url || "/placeholder.svg"}

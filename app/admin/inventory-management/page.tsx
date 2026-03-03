@@ -169,7 +169,7 @@ export default function InventoryManagement() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Redirect after login
-    // router.push("/pages/admin/notification-details");
+    // router.push("/admin/notification-details");
     setUnsavedChanges(0);
 
     setUpdate(false);
@@ -182,7 +182,7 @@ export default function InventoryManagement() {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm mb-4">
           <a
-            href="/pages/admin/dashboard"
+            href="/admin/dashboard"
             className="text-[#d97638] hover:underline"
           >
             Dashboard

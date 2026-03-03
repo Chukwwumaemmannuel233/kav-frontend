@@ -244,7 +244,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                   )}
 
                   <Link
-                    href="/pages/user/new-arrivals"
+                    href="/user/new-arrivals"
                     onClick={() => setNavigating(true)}
                     className="text-sm font-medium text-black/80 hover:underline"
                   >
@@ -388,7 +388,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                   {recommendations.map((product) => (
                     <Link
                       key={product.id}
-                      href={`/pages/user/products/${product.id}`}
+                      href={`/user/products/${product.id}`}
                       className="group flex items-center gap-4 rounded-lg bg-neutral-100/50 p-4 hover:bg-neutral-100 transition"
                     >
                       <div className="aspect-square w-20 flex-shrink-0 overflow-hidden rounded-md bg-neutral-200">
@@ -420,7 +420,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                   From the Journal
                 </h2>
                 <Link
-                  href="/pages/user/Journal"
+                  href="/user/Journal"
                   className="text-sm font-medium text-black/80 hover:underline"
                 >
                   Read All
@@ -428,7 +428,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
               </div>
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 {journalPosts.map((post) => (
-                  <Link key={post.id}  href={`/pages/user/Journal/${post.id}`} className="group">
+                  <Link key={post.id}  href={`/user/Journal/${post.id}`} className="group">
                     <div className="aspect-video w-full overflow-hidden rounded-lg bg-neutral-200">
                       <img
                         src={post.image || "/placeholder.svg"}

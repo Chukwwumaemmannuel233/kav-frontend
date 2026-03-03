@@ -123,7 +123,7 @@ export default function FAQPage() {
       <section className="px-6 md:px-16 py-16 text-center bg-neutral-50">
         <h2 className="text-2xl md:text-3xl font-bold mb-4">Can't find your answer?</h2>
         <p className="text-neutral-600 mb-8">Our team is here to help. Reach out to us for any questions.</p>
-        <Link href="/pages/user/contact">
+        <Link href="/user/contact">
           <button className="bg-black text-white px-8 py-3 font-medium hover:bg-neutral-900 transition">
             Contact Us
           </button>

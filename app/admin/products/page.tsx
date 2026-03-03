@@ -73,7 +73,7 @@ export default function ProductManagement() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Link
-            href="/pages/admin/dashboard"
+            href="/admin/dashboard"
             className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center hover:bg-neutral-300 transition"
           >
             <ArrowLeft size={20} />
@@ -176,7 +176,7 @@ export default function ProductManagement() {
                   <span className="text-xs text-neutral-500 md:hidden">
                     Actions
                   </span>
-                  <Link href={`/pages/admin/products/${product.id}`}>
+                  <Link href={`/admin/products/${product.id}`}>
                     <button className="flex items-center gap-2 text-sm hover:text-black">
                       View
                     </button>
@@ -197,7 +197,7 @@ export default function ProductManagement() {
 
       {/* Floating Add Button */}
       <button
-        onClick={() => router.push("/pages/admin/add-product")}
+        onClick={() => router.push("/admin/add-product")}
         className="fixed bottom-24 md:bottom-8 right-8 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-neutral-800 transition z-40"
       >
         <Plus size={24} />

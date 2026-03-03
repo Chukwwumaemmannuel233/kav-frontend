@@ -35,7 +35,7 @@ export default function LoginPage() {
     localStorage.setItem("user", JSON.stringify(data.user));
 
      toast.success("Login successful", { duration: 1500 });
-    router.push("/pages/user/dashboard");
+    router.push("/user/dashboard");
   } catch (error: any) {
     toast.error(error.response?.data?.message || "Invalid email or password", { duration: 1500 });
   } finally {
@@ -117,7 +117,7 @@ export default function LoginPage() {
           <span className="text-neutral-400 text-sm">
             New to our site?{" "}
             <Link
-              href="/pages/auth/signup"
+              href="/auth/signup"
               className="text-neutral-900 font-semibold hover:underline transition"
             >
               Sign Up

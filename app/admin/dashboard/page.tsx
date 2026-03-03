@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      router.push("/pages/admin/login");
+      router.push("/admin/login");
       return;
     }
 
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Redirect after login
-    router.push("/pages/admin/orders");
+    router.push("/admin/orders");
   };
   const AddNewProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Redirect after login
-    router.push("/pages/admin/add-product");
+    router.push("/admin/add-product");
   };
 
   const Messages = async (e: React.FormEvent) => {
@@ -107,7 +107,7 @@ export default function AdminDashboard() {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     // Redirect after login
-    router.push("/pages/admin/messages");
+    router.push("/admin/messages");
   };
 
   return (

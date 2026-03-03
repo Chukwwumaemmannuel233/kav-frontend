@@ -15,7 +15,7 @@ export default function UserLayout({
   useEffect(() => {
     const token = getToken();
     if (!token) {
-      router.replace("/pages/auth/login");
+      router.replace("/auth/login");
     }
   }, [router]);
 

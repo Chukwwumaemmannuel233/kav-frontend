@@ -49,7 +49,7 @@ export default function AdminHeader() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <Link
-            href="/pages/admin/dashboard"
+            href="/admin/dashboard"
             className="hover:opacity-80 transition"
           >
             <Image
@@ -64,9 +64,9 @@ export default function AdminHeader() {
           {/* Navigation Links */}
           <nav className="hidden md:flex gap-8 items-center">
             <Link
-              href="/pages/admin/dashboard"
+              href="/admin/dashboard"
               className={`text-sm font-medium hover:opacity-70 transition ${
-                isActive("/pages/admin/dashboard")
+                isActive("/admin/dashboard")
                   ? "text-black border-b-2 border-black pb-1"
                   : "text-neutral-600"
               }`}
@@ -74,9 +74,9 @@ export default function AdminHeader() {
               Dashboard
             </Link>
             <Link
-              href="/pages/admin/orders"
+              href="/admin/orders"
               className={`text-sm font-medium hover:opacity-70 transition ${
-                isActive("/pages/admin/orders")
+                isActive("/admin/orders")
                   ? "text-black border-b-2 border-black pb-1"
                   : "text-neutral-600"
               }`}
@@ -84,9 +84,9 @@ export default function AdminHeader() {
               Orders
             </Link>
             <Link
-              href="/pages/admin/products"
+              href="/admin/products"
               className={`text-sm font-medium hover:opacity-70 transition ${
-                isActive("/pages/admin/products")
+                isActive("/admin/products")
                   ? "text-black border-b-2 border-black pb-1"
                   : "text-neutral-600"
               }`}
@@ -94,9 +94,9 @@ export default function AdminHeader() {
               Products
             </Link>
             <Link
-              href="/pages/admin/customers"
+              href="/admin/customers"
               className={`text-sm font-medium hover:opacity-70 transition ${
-                isActive("/pages/admin/customers")
+                isActive("/admin/customers")
                   ? "text-black border-b-2 border-black pb-1"
                   : "text-neutral-600"
               }`}
@@ -104,9 +104,9 @@ export default function AdminHeader() {
               Customers
             </Link>
             <Link
-              href="/pages/admin/messages"
+              href="/admin/messages"
               className={`relative text-sm font-medium hover:opacity-70 transition ${
-                isActive("/pages/admin/messages")
+                isActive("/admin/messages")
                   ? "text-black border-b-2 border-black pb-1"
                   : "text-neutral-600"
               }`}
@@ -123,13 +123,13 @@ export default function AdminHeader() {
           {/* Right Icons */}
           <div className="flex items-center gap-4">
             <Link
-              href="/pages/admin/settings"
+              href="/admin/settings"
               className="hover:opacity-70 transition"
             >
               <Settings size={20} />
             </Link>
             <Link
-              href="/pages/admin/notification"
+              href="/admin/notification"
               className="hover:opacity-70 transition relative"
             >
               <Bell size={20} />
@@ -142,7 +142,7 @@ export default function AdminHeader() {
             </Link>
 
             <Link
-              href="/pages/admin/profile"
+              href="/admin/profile"
               className="hover:opacity-70 transition"
             >
               {profileImage ? (
@@ -165,9 +165,9 @@ export default function AdminHeader() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-neutral-200 bg-white z-40">
         <div className="flex items-center justify-around">
           <Link
-            href="/pages/admin/dashboard"
+            href="/admin/dashboard"
             className={`flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium hover:opacity-70 transition ${
-              isActive("/pages/admin/dashboard")
+              isActive("/admin/dashboard")
                 ? "text-black"
                 : "text-neutral-600"
             }`}
@@ -176,9 +176,9 @@ export default function AdminHeader() {
             <span>Dashboard</span>
           </Link>
           <Link
-            href="/pages/admin/orders"
+            href="/admin/orders"
             className={`flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium hover:opacity-70 transition ${
-              isActive("/pages/admin/orders")
+              isActive("/admin/orders")
                 ? "text-black"
                 : "text-neutral-600"
             }`}
@@ -187,9 +187,9 @@ export default function AdminHeader() {
             <span>Orders</span>
           </Link>
           <Link
-            href="/pages/admin/products"
+            href="/admin/products"
             className={`flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium hover:opacity-70 transition ${
-              isActive("/pages/admin/products")
+              isActive("/admin/products")
                 ? "text-black"
                 : "text-neutral-600"
             }`}
@@ -198,9 +198,9 @@ export default function AdminHeader() {
             <span>Products</span>
           </Link>
           <Link
-            href="/pages/admin/customers"
+            href="/admin/customers"
             className={`flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium hover:opacity-70 transition ${
-              isActive("/pages/admin/customers")
+              isActive("/admin/customers")
                 ? "text-black"
                 : "text-neutral-600"
             }`}
@@ -209,9 +209,9 @@ export default function AdminHeader() {
             <span>Customers</span>
           </Link>
           <Link
-            href="/pages/admin/messages"
+            href="/admin/messages"
             className={`flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium ${
-              isActive("/pages/admin/messages")
+              isActive("/admin/messages")
                 ? "text-black"
                 : "text-neutral-600"
             }`}

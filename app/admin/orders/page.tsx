@@ -198,7 +198,7 @@ export default function OrdersManagement() {
                         Action
                       </span>
                       <Link
-                        href={`/pages/admin/orders/${order.id}`}
+                        href={`/admin/orders/${order.id}`}
                         className="text-black font-semibold"
                       >
                         View →
@@ -224,7 +224,7 @@ export default function OrdersManagement() {
                     </div>
                     <div>
                       <Link
-                        href={`/pages/admin/orders/${order.id}`}
+                        href={`/admin/orders/${order.id}`}
                         className="text-black font-semibold"
                       >
                         View Details
