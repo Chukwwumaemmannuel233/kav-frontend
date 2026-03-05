@@ -440,7 +440,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                       <p className="text-sm uppercase tracking-wider text-neutral-600">
                         {post.category}
                       </p>
-                      <h3 className="mt-1 text-lg font-medium leading-tight  group-hover:underline">
+                      <h3 className="mt-1 text-lg font-medium leading-tight group-hover:underline">
                         {post.title}
                       </h3>
                     </div>
