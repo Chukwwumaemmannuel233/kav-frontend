@@ -30,9 +30,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <meta name="color-scheme" content="light dark" />
-      </head>
       <body className={`font-sans antialiased`}>
         <LoadingProvider>
           <CartProvider>

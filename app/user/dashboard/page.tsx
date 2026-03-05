@@ -215,7 +215,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
 
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-background min-h-screen">
       <SiteHeader variant="user" />
 
       <main className="flex-1">
