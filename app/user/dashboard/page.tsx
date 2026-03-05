@@ -215,13 +215,13 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
 
 
   return (
-    <div className=" min-h-screen">
+    <div className="min-h-screen">
       <SiteHeader variant="user" />
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="mb-12 text-center md:mb-16">
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-black sm:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
                Welcome Back{userName ? `, ${userName}` : ""} 
             </h1>
             <p className="mt-3 text-base font-normal text-neutral-600 sm:text-lg">
@@ -233,7 +233,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
             {/* New Arrivals Section */}
             <section>
               <div className="flex items-center justify-between gap-4 mb-6">
-                <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
+                <h2 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
                   New Arrivals
                 </h2>
                 <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                   <Link
                     href="/user/new-arrivals"
                     onClick={() => setNavigating(true)}
-                    className="text-sm font-medium text-black/80 hover:underline"
+                    className="text-sm font-mediumbg-background hover:underline"
                   >
                     View All
                   </Link>
@@ -291,16 +291,16 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                       />
 
                       {/* NEW badge */}
-                      <span className="absolute top-3 left-3 bg-black text-white text-xs px-2 py-1 rounded">
+                      <span className="absolute top-3 left-3 text-xs px-2 py-1 rounded">
                         NEW
                       </span>
                     </div>
 
                     <div className="mt-2 text-sm">
-                      <h3 className="font-medium text-black truncate">
+                      <h3 className="font-medium  truncate">
                         {product.name}
                       </h3>
-                      <p className="mt-1 font-medium text-black/90">
+                      <p className="mt-1 font-medium ">
                         ₦{Number(product.price || 0).toLocaleString()}
                       </p>
                     </div>
@@ -368,7 +368,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
             <section>
               <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
                 <div className="md:col-span-1">
-                  <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
+                  <h2 className="text-2xl font-bold leading-tight tracking-tight  sm:text-3xl">
                     Just For You
                   </h2>
                   <p className="text-xs text-neutral-500">
@@ -400,10 +400,10 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                       </div>
 
                       <div>
-                        <h3 className="text-base font-medium leading-tight text-black group-hover:underline">
+                        <h3 className="text-base font-medium leading-tight  group-hover:underline">
                           {product.name}
                         </h3>
-                        <p className="text-sm font-medium text-black/80">
+                        <p className="text-sm font-medium ">
                           ₦{Number(product.price).toLocaleString()}
                         </p>
                       </div>
@@ -416,12 +416,12 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
             {/* From the Journal Section */}
             <section>
               <div className="flex items-center justify-between gap-4 mb-6">
-                <h2 className="text-2xl font-bold leading-tight tracking-tight text-black sm:text-3xl">
+                <h2 className="text-2xl font-bold leading-tight tracking-tight  sm:text-3xl">
                   From the Journal
                 </h2>
                 <Link
                   href="/user/Journal"
-                  className="text-sm font-medium text-black/80 hover:underline"
+                  className="text-sm font-medium  hover:underline"
                 >
                   Read All
                 </Link>
@@ -440,7 +440,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                       <p className="text-sm uppercase tracking-wider text-neutral-600">
                         {post.category}
                       </p>
-                      <h3 className="mt-1 text-lg font-medium leading-tight text-black group-hover:underline">
+                      <h3 className="mt-1 text-lg font-medium leading-tight  group-hover:underline">
                         {post.title}
                       </h3>
                     </div>
