@@ -1,149 +1,245 @@
 "use client";
 
-import { useState } from "react";
-import { motion, type Variants } from "framer-motion";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "./components/ui/button";
-import SiteHeader from "./components/site-header";
-import { Instagram, Facebook, Twitter, Music2 } from "lucide-react";
-import { useLoading } from "@/lib/loading-context";
+import API from "@/lib/api";
 
-export default function Home() {
-  const { isInitialLoading } = useLoading();
+export default function LandingPage() {
+  const router = useRouter();
+  const [newArrivals, setNewArrivals] = useState<any[]>([]);
+  const [recommended, setRecommended] = useState<any[]>([]);
+  const [journalPosts, setJournalPosts] = useState<any[]>([]);
 
-  const [signupLoading, setSignupLoading] = useState(false);
-  const [loginLoading, setLoginLoading] = useState(false);
+  useEffect(() => {
+    fetchNewArrivals();
+    fetchRecommended();
+     fetchJournalPosts();
+  }, []);
 
-  const handleSignup = async () => {
-    setSignupLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    window.location.href = "/auth/signup";
+const fetchJournalPosts = async () => {
+  try {
+    const res = await API.get("/journal", { params: { limit: 2 } });
+    setJournalPosts(res.data.posts || []); // adjust based on your API response
+  } catch (err) {
+    console.error("Failed to fetch journal posts", err);
+  }
+};
+
+  // Fetch New Arrivals
+  const fetchNewArrivals = async () => {
+    try {
+      const res = await API.get("/products/new-arrivals", {
+        params: { limit: 4 },
+      });
+      setNewArrivals(res.data.products || []);
+    } catch (err) {
+      console.error("Failed to fetch new arrivals", err);
+    }
   };
 
-  const handleLogin = async () => {
-    setLoginLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    window.location.href = "/auth/login";
+  // Fetch Recommended Products
+  const fetchRecommended = async () => {
+    try {
+      const res = await API.get("/products", { params: { limit: 6 } });
+      setRecommended(res.data.products || []);
+    } catch (err) {
+      console.error("Failed to fetch recommended products", err);
+    }
   };
 
-  /* =====================
-     FRAMER MOTION VARIANTS
-  ====================== */
-
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, x: -60 }, // 👈 FROM LEFT
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.9,
-        ease: [0.22, 1, 0.36, 1],
-      },
-    },
-  };
-
-  const socialIconVariants: Variants = {
-    hidden: { opacity: 0, x: -30 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1],
-      },
-    },
+  // Helper to format price safely
+  const formatPrice = (price: number | string) => {
+    if (!price) return "N/A";
+    return typeof price === "number"
+      ? `₦${price.toLocaleString()}`
+      : `₦${price}`;
   };
 
   return (
-    <main className="min-h-screen overflow-hidden">
-      <SiteHeader />
+    <main className="bg-background">
+      {/* HEADER */}
+      <header className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="text-2xl font-bold">
+          <Link href="/" className="hover:opacity-80 transition">
+            <Image
+              src="/images/logo1.png"
+              alt="Fabric Logo"
+              width={200}
+              height={10}
+              className="w-15 h-auto h-8 dark:invert"
+            />
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push("/auth/signup")}
+            className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+          >
+            Join Now
+          </button>
+
+          <button
+            onClick={() => router.push("/auth/login")}
+            className="px-5 py-2.5 rounded-lg bg-primary text-white font-semibold shadow-md hover:bg-primary/90 dark:shadow-none transition"
+          >
+            Login
+          </button>
+        </div>
+      </header>
 
       {/* HERO */}
-      <section
-        className="relative min-h-screen flex items-center justify-center bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://media.istockphoto.com/id/2192806905/photo/luxury-pearl-fabric-background-3d-render.jpg?s=612x612&w=0&k=20&c=G32DnzcZZS4RRMpagl41rqes1ZW7Ky7fOAoa5d-k9nE=')",
-        }}
-      >
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/40" />
+      <section className="max-w-7xl mx-auto px-6 pt-16 pb-10 text-center md:text-left">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">
+          Discover Timeless Luxury
+        </h1>
+        <p className="text-lg max-w-xl mx-auto md:mx-0">
+          Curated fashion, modern silhouettes, and premium craftsmanship
+          designed for the modern wardrobe.
+        </p>
 
-        {/* CONTENT */}
-        {!isInitialLoading && (
-          <motion.div
-            className="relative z-10 max-w-xl w-full px-4 sm:px-6 text-center"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
+        <div className="mt-6 flex justify-center md:justify-start gap-4">
+          <Button
+            onClick={() => router.push("/profile")}
+            className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
           >
-            {/* BRAND */}
-            <motion.img
-              variants={itemVariants}
-              src="/images/logo1.png"
-              alt="KAV Textiles Logo"
-              className="mx-auto mb-6 w-40 sm:w-48 md:w-56 object-contain"
-            />
+            Explore Profile
+          </Button>
+        </div>
+      </section>
 
-            {/* TAGLINE */}
-            <motion.p
-              variants={itemVariants}
-              className="text-white/70 text-sm sm:text-base mb-8"
-            >
-              Premium fabrics crafted with intention and excellence.
-            </motion.p>
+      {/* NEW ARRIVALS */}
+      <section className="max-w-7xl mx-auto px-6 py-12">
+        <div className="flex justify-between mb-8">
+          <h2 className="text-2xl font-bold">New Arrivals</h2>
+          <Link href="/products" className="text-primary font-semibold">
+            View All →
+          </Link>
+        </div>
 
-            {/* BUTTONS */}
-            <motion.div
-              variants={itemVariants}
-              className="flex flex-col sm:flex-row gap-3 justify-center mb-10"
-            >
-              <Button
-                onClick={handleSignup}
-                className="bg-white text-black px-6 py-2 rounded-full text-sm font-medium hover:bg-white/90"
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {newArrivals.map((product) => (
+            <Link key={product.id} href={`/user/fabrics/${product.id}`}>
+              <div className="group cursor-pointer transition-transform hover:scale-105">
+                <div className="aspect-[3/4] bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden mb-4">
+                  <Image
+                    src={product.image_url || "/images/placeholder.jpg"}
+                    alt={product.name}
+                    width={400}
+                    height={500}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+
+                <h4 className="font-semibold text-sm">{product.name}</h4>
+                <p className="text-neutral-500 text-sm">
+                  ₦{Number(product.price).toLocaleString()}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* FULL WIDTH BANNER */}
+      <section className="relative h-[420px] w-full overflow-hidden">
+        <Image
+          src="/images/blush-silk-dupioni-fabric.jpg"
+          alt="collection"
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-6">
+          <h2 className="text-white text-4xl md:text-6xl font-light mb-4">
+            The Sculpture Series
+          </h2>
+          <p className="text-white/90 max-w-xl mb-6">
+            Architectural lines meet fluid textures in our most ambitious
+            collection yet.
+          </p>
+          <Link
+            href="/products"
+            className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-white/90 transition"
+          >
+            Shop Collection
+          </Link>
+        </div>
+      </section>
+
+      {/* RECOMMENDED PRODUCTS */}
+      <section className="max-w-7xl mx-auto py-16">
+        <div className="px-6 mb-8">
+          <h2 className="text-2xl font-bold">Recommended For You</h2>
+        </div>
+
+        <div className="flex gap-6 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
+          {recommended.map((product) => (
+            <Link key={product.id} href={`/user/fabrics/${product.id}`}>
+              <div className="snap-start min-w-[220px] flex-shrink-0 transition-transform hover:scale-105">
+                <div className="aspect-square rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-800 mb-4">
+                  <Image
+                    src={product.image_url || "/images/placeholder.jpg"}
+                    alt={product.name}
+                    width={300}
+                    height={300}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+
+                <div className="text-center">
+                  <h4 className="font-semibold text-sm">{product.name}</h4>
+                  <p className="text-primary font-bold">
+                    ₦{Number(product.yard_price).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* JOURNAL */}
+      <section className="max-w-7xl mx-auto px-6 pb-20">
+        <h2 className="text-2xl font-bold mb-8">Trending in the Journal</h2>
+
+        <div className="grid md:grid-cols-2 gap-10">
+          {journalPosts.map((post) => (
+            <article key={post.id} className="space-y-4">
+              <Link href={`/journal/${post.id}`}>
+                <div className="aspect-video rounded-xl overflow-hidden bg-neutral-200 cursor-pointer">
+                  <Image
+                    src={post.image || "/images/placeholder.jpg"}
+                    alt={post.title}
+                    width={600}
+                    height={400}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </Link>
+
+              <span className="text-xs uppercase text-primary font-bold tracking-widest">
+                {post.category || "Style Report"}
+              </span>
+
+              <h3 className="text-xl font-bold">{post.title}</h3>
+
+              <p className="text-neutral-500">
+                {post.excerpt ||
+                  "Read our latest fashion insights and style tips."}
+              </p>
+
+              <Link
+                href={`/journal/${post.id}`}
+                className="font-semibold border-b border-black dark:border-white"
               >
-                {signupLoading ? "Please wait…" : "Sign up"}
-              </Button>
-
-              <button
-                onClick={handleLogin}
-                className="px-6 py-2 rounded-full border border-white/60 text-white text-sm font-medium hover:bg-white/10"
-              >
-                {loginLoading ? "Please wait…" : "Log in"}
-              </button>
-            </motion.div>
-
-            {/* SOCIAL ICONS */}
-            <motion.div
-              variants={itemVariants}
-              className="flex justify-center gap-4"
-            >
-              {[Instagram, Facebook, Twitter, Music2].map((Icon, i) => (
-                <motion.a
-                  key={i}
-                  href="#"
-                  variants={socialIconVariants}
-                  whileHover={{ y: -4, scale: 1.15 }}
-                  className="text-white/60 hover:text-white"
-                >
-                  <div className="p-2 rounded-full border border-white/20 hover:border-white/50 hover:bg-white/10">
-                    <Icon size={18} />
-                  </div>
-                </motion.a>
-              ))}
-            </motion.div>
-          </motion.div>
-        )}
+                Read More
+              </Link>
+            </article>
+          ))}
+        </div>
       </section>
     </main>
   );

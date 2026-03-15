@@ -7,7 +7,6 @@ import { useCart } from "../../../lib/cart-context";
 import { toast } from "sonner";
 import API from "@/lib/api";
 
-
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 type Address = {
@@ -52,58 +51,60 @@ export default function CheckoutPage() {
   }, [uiError]);
 
   /* ---------------- FETCH ADDRESSES ---------------- */
- useEffect(() => {
-  const fetchAddresses = async () => {
-    try {
-      const res = await API.get("/addresses"); // Axios automatically includes token
-      const data = res.data;
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const res = await API.get("/addresses"); // Axios automatically includes token
+        const data = res.data;
 
-      if (data.addresses?.length) {
-        const defaultAddress =
-          data.addresses.find((a: Address) => a.is_default) ||
-          data.addresses[0];
+        if (data.addresses?.length) {
+          const defaultAddress =
+            data.addresses.find((a: Address) => a.is_default) ||
+            data.addresses[0];
 
-        setAddress(defaultAddress);
-        setShowAddressForm(false);
-      } else {
+          setAddress(defaultAddress);
+          setShowAddressForm(false);
+        } else {
+          setShowAddressForm(true);
+        }
+      } catch (err: any) {
+        // Axios interceptor handles token expiration / deactivation
+        console.error(
+          err.response?.data?.message || "Failed to fetch addresses",
+        );
         setShowAddressForm(true);
+      } finally {
+        setLoadingAddress(false);
       }
-    } catch (err: any) {
-      // Axios interceptor handles token expiration / deactivation
-      console.error(err.response?.data?.message || "Failed to fetch addresses");
-      setShowAddressForm(true);
-    } finally {
-      setLoadingAddress(false);
-    }
-  };
+    };
 
-  fetchAddresses();
-}, []);
+    fetchAddresses();
+  }, []);
   /* ---------------- Save Address ---------------- */
 
- const saveAddress = async () => {
-  try {
-    if (!formData.full_name || !formData.phone || !formData.street_address) {
-      setUiError("Please fill all required address fields");
-      return;
+  const saveAddress = async () => {
+    try {
+      if (!formData.full_name || !formData.phone || !formData.street_address) {
+        setUiError("Please fill all required address fields");
+        return;
+      }
+
+      const res = await API.post("/addresses", formData);
+
+      setAddress(res.data.address); // Axios automatically parses JSON
+      setShowAddressForm(false);
+      setUiError(null);
+      toast.success("Address saved");
+    } catch (err: any) {
+      // Axios interceptor will handle token/deactivated issues
+      setUiError(err.response?.data?.message || "Failed to save address");
     }
-
-    const res = await API.post("/addresses", formData);
-
-    setAddress(res.data.address); // Axios automatically parses JSON
-    setShowAddressForm(false);
-    setUiError(null);
-    toast.success("Address saved");
-  } catch (err: any) {
-    // Axios interceptor will handle token/deactivated issues
-    setUiError(err.response?.data?.message || "Failed to save address");
-  }
-};
+  };
 
   /* ---------------- CALCULATIONS ---------------- */
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
   // const shipping = cartItems.length ? 1500 : 0;
@@ -111,43 +112,42 @@ export default function CheckoutPage() {
   const total = subtotal;
 
   /* ---------------- PAYSTACK ---------------- */
- const handlePay = async () => {
-  if (!address) return toast.error("Add delivery address");
+  const handlePay = async () => {
+    if (!address) return toast.error("Add delivery address");
 
-  try {
-    setLoadingPayment(true);
+    try {
+      setLoadingPayment(true);
 
-    // 1️⃣ Create order
-    const checkoutRes = await API.post("/checkout", {
-      address_id: address.id,
-      items: cartItems.map(item => ({
-        product_id: item.productId,
-        variant_id: item.variantId,
-        name: item.name,
-        variant_type: item.variantType,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-      })),
-    });
+      // 1️⃣ Create order
+      const checkoutRes = await API.post("/checkout", {
+        address_id: address.id,
+        items: cartItems.map((item) => ({
+          product_id: item.productId,
+          variant_id: item.variantId,
+          name: item.name,
+          variant_type: item.variantType,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+      });
 
-    // 2️⃣ Init Paystack
-    const payRes = await API.post("/payments/init", {
-      order_id: checkoutRes.data.order.id,
-    });
+      // 2️⃣ Init Paystack
+      const payRes = await API.post("/payments/init", {
+        order_id: checkoutRes.data.order.id,
+      });
 
-    // 3️⃣ Redirect to Paystack
-    window.location.href = payRes.data.authorization_url;
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || "Payment failed");
-  } finally {
-    setLoadingPayment(false);
-  }
-};
-
+      // 3️⃣ Redirect to Paystack
+      window.location.href = payRes.data.authorization_url;
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Payment failed");
+    } finally {
+      setLoadingPayment(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <header className="border-b px-6 py-4">
         <div className="flex items-center gap-2">
           <Lock size={20} />
@@ -161,16 +161,16 @@ export default function CheckoutPage() {
           <h2 className="text-3xl font-bold">Checkout</h2>
 
           {loadingAddress ? (
-            <div className="border rounded-lg p-5 bg-neutral-50 space-y-3 animate-pulse">
-              <div className="h-4 bg-neutral-300 rounded w-1/2" />
-              <div className="h-3 bg-neutral-300 rounded w-3/4" />
-              <div className="h-3 bg-neutral-300 rounded w-2/3" />
-              <div className="h-3 bg-neutral-300 rounded w-1/3" />
+            <div className="border  border-neutral-200 dark:border-neutral-800 rounded-lg p-5 bg-neutral-50 dark:bg-neutral-900 space-y-3 animate-pulse">
+              <div className="h-4 bg-neutral-300 dark:bg-neutral-700 rounded w-1/2" />
+              <div className="h-3 bg-neutral-300 dark:bg-neutral-700 rounded w-3/4" />
+              <div className="h-3 bg-neutral-300 dark:bg-neutral-700 rounded w-2/3" />
+              <div className="h-3 bg-neutral-300 dark:bg-neutral-700 rounded w-1/3" />
             </div>
           ) : address && !showAddressForm ? (
-            <div className="border rounded-lg p-5 bg-neutral-50">
+            <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg p-5 bg-neutral-50 dark:bg-neutral-900">
               <h3 className="font-semibold mb-2">Delivery Address</h3>
-              <p className="text-sm text-neutral-700 leading-relaxed">
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
                 {address.full_name} <br />
                 {address.street_address} <br />
                 {address.city}, {address.state} <br />
@@ -180,7 +180,7 @@ export default function CheckoutPage() {
 
               <button
                 onClick={() => setShowAddressForm(true)}
-                className="text-sm text-blue-600 mt-3 inline-block"
+                className="text-sm text-blue-600 dark:text-blue-400 mt-3 inline-block"
               >
                 Change address
               </button>
@@ -264,11 +264,18 @@ export default function CheckoutPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, is_default: e.target.checked })
                   }
+                  className="accent-black dark:accent-white"
                 />
                 Save as default address
               </label>
 
-              <Button onClick={saveAddress} className="mt-4">
+              <Button
+                onClick={saveAddress}
+                className="mt-4 px-6 py-3 rounded-lg 
+                    bg-black text-white hover:bg-neutral-900
+                    dark:bg-white dark:text-black dark:hover:bg-neutral-200
+                    transition-colors"
+              >
                 Save Address
               </Button>
             </div>
@@ -301,9 +308,11 @@ export default function CheckoutPage() {
               </div> */}
             </div>
 
-            <div className="border-t pt-4 mb-6 flex justify-between font-bold">
-              <span>Total</span>
-              <span>₦{total.toLocaleString()}</span>
+            <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4 mb-6 flex justify-between font-bold">
+              <span className="text-neutral-900 dark:text-white">Total</span>
+              <span className="text-neutral-900 dark:text-white">
+                ₦{total.toLocaleString()}
+              </span>
             </div>
 
             <Button
@@ -311,16 +320,16 @@ export default function CheckoutPage() {
               disabled={!address || loadingPayment}
               isLoading={loadingPayment}
               loadingText="Redirecting..."
-              className={`w-full py-4 rounded-lg font-semibold ${
+              className={`w-full py-4 rounded-lg font-semibold transition ${
                 !address
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-black text-white"
+                  ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed text-white"
+                  : "bg-black text-white dark:bg-white dark:text-black hover:bg-neutral-900 dark:hover:bg-neutral-200"
               }`}
             >
               Pay ₦{total.toLocaleString()}
             </Button>
 
-            <div className="flex justify-center items-center gap-2 text-xs text-neutral-500 mt-4">
+            <div className="flex justify-center items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 mt-4">
               <Lock size={14} />
               <span>SSL Encrypted Payment</span>
             </div>
@@ -334,7 +343,25 @@ export default function CheckoutPage() {
           padding: 12px 14px;
           border-radius: 8px;
           background: #f5f5f5;
+          border: 1px solid #e5e5e5;
+          color: #000;
           outline: none;
+        }
+
+        .input:focus {
+          border-color: #111;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          .input {
+            background: #171717;
+            border: 1px solid #404040;
+            color: #fff;
+          }
+
+          .input:focus {
+            border-color: #d4d4d4;
+          }
         }
       `}</style>
     </div>

@@ -22,7 +22,7 @@ export default function JournalDetail() {
   if (!post) return <p className="text-center py-20">Loading…</p>;
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-background min-h-screen">
       <SiteHeader variant="user" />
 
       <main className="mx-auto max-w-3xl px-4 py-20">
@@ -63,7 +63,7 @@ export default function JournalDetail() {
               transition: { staggerChildren: 0.08 },
             },
           }}
-          className="mt-8 space-y-6 text-neutral-700 leading-relaxed"
+          className="mt-8 space-y-6 text-neutral-400 leading-relaxed"
         >
           {post.content.split("\n\n").map((para: string, i: number) => (
             <motion.p

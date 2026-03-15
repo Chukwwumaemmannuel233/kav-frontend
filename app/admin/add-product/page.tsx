@@ -4,19 +4,27 @@ import { useState } from "react";
 import API from "@/lib/api";
 import { toast } from "sonner";
 
+const CATEGORY_OPTIONS = [
+  "cotton",
+  "lace",
+  "silk",
+  "ankara",
+  "linen",
+];
 
+const VARIANT_TYPES = ["yard", "trouser"];
 
 export default function AddProductForm() {
-  /* =========================
-     STATES
-  ========================= */
+
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
   const [sku, setSku] = useState(generateSKU());
   const [category, setCategory] = useState("");
   const [stockQuantity, setStockQuantity] = useState("");
 
-  const [variants, setVariants] = useState([{ type: "", price: "" }]);
+  const [variants, setVariants] = useState([
+    { type: "yard", price: "" }
+  ]);
 
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
@@ -26,19 +34,15 @@ export default function AddProductForm() {
 
   const [loading, setLoading] = useState(false);
 
-  /* =========================
-     SKU GENERATOR
-  ========================= */
   function generateSKU() {
     const random = Math.floor(100000 + Math.random() * 900000);
     return `SKU-${random}`;
   }
 
-  /* =========================
-     VARIANT FUNCTIONS
-  ========================= */
+  /* ================= VARIANTS ================= */
+
   const addVariant = () => {
-    setVariants((prev) => [...prev, { type: "", price: "" }]);
+    setVariants((prev) => [...prev, { type: "yard", price: "" }]);
   };
 
   const removeVariant = (index: number) => {
@@ -51,9 +55,8 @@ export default function AddProductForm() {
     setVariants(updated);
   };
 
-  /* =========================
-     MAIN IMAGE
-  ========================= */
+  /* ================= MAIN IMAGE ================= */
+
   const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -65,46 +68,37 @@ export default function AddProductForm() {
     reader.readAsDataURL(file);
   };
 
-  /* =========================
-     SUB IMAGES
-  ========================= */
+  /* ================= SUB IMAGES ================= */
+
   const handleSubImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    const selected = Array.from(files).slice(0, 10); // max 10
+    const selected = Array.from(files);
+
     setSubImages(selected);
 
-    const previews = selected.map((file) => {
-      const reader = new FileReader();
-      return new Promise<string>((resolve) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(previews).then((imgs) => setSubImagePreviews(imgs));
+    const previews = selected.map((file) => URL.createObjectURL(file));
+    setSubImagePreviews(previews);
   };
 
-  /* =========================
-     RESET FORM
-  ========================= */
+  /* ================= RESET ================= */
+
   const resetForm = () => {
     setProductName("");
     setDescription("");
     setSku(generateSKU());
     setCategory("");
     setStockQuantity("");
-    setVariants([{ type: "", price: "" }]);
+    setVariants([{ type: "yard", price: "" }]);
     setMainImage(null);
     setMainImagePreview(null);
     setSubImages([]);
     setSubImagePreviews([]);
   };
 
-  /* =========================
-     SUBMIT
-  ========================= */
+  /* ================= SUBMIT ================= */
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -117,6 +111,7 @@ export default function AddProductForm() {
       setLoading(true);
 
       const formData = new FormData();
+
       formData.append("name", productName);
       formData.append("description", description);
       formData.append("sku", sku);
@@ -125,35 +120,36 @@ export default function AddProductForm() {
       formData.append("variants", JSON.stringify(variants));
 
       if (mainImage) formData.append("image", mainImage);
-      subImages.forEach((img) => formData.append("sub_images", img));
 
-      const res = await API.post("/admin/products", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      subImages.forEach((img) => {
+        formData.append("sub_images", img);
       });
 
-      console.log(res.data);
-     toast.success("Product added successfully");
+      await API.post("/admin/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast.success("Product added successfully");
+
       resetForm();
+
     } catch (err: any) {
       console.error(err);
-     toast.error(err?.response?.data?.message || "Error creating product");
+      toast.error(err?.response?.data?.message || "Error creating product");
     } finally {
       setLoading(false);
     }
   };
 
-  /* =========================
-     UI
-  ========================= */
   return (
     <div className="min-h-screen bg-[#f6f6f6] py-10">
       <div className="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow">
+
         <h1 className="text-3xl font-bold mb-2">Add Product</h1>
         <p className="text-gray-500 mb-6">Create a new product</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+
           {/* NAME */}
           <input
             type="text"
@@ -189,12 +185,19 @@ export default function AddProductForm() {
 
           {/* CATEGORY + STOCK */}
           <div className="grid grid-cols-2 gap-4">
-            <input
-              placeholder="Category"
+
+            <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="border p-3 rounded-lg"
-            />
+            >
+              <option value="">Select Category</option>
+              {CATEGORY_OPTIONS.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat.toUpperCase()}
+                </option>
+              ))}
+            </select>
 
             <input
               type="number"
@@ -206,26 +209,35 @@ export default function AddProductForm() {
           </div>
 
           {/* VARIANTS */}
+
           <div>
-            <p className="font-semibold mb-2">Variants</p>
+            <p className="font-semibold mb-3">Variants</p>
 
             {variants.map((v, index) => (
               <div key={index} className="flex gap-2 mb-2">
-                <input
-                  placeholder="Type (Yard, Trouser)"
+
+                <select
                   value={v.type}
-                  onChange={(e) => updateVariant(index, "type", e.target.value)}
-                  className="flex-1 border p-2 rounded"
-                />
+                  onChange={(e) =>
+                    updateVariant(index, "type", e.target.value)
+                  }
+                  className="border p-2 rounded flex-1"
+                >
+                  {VARIANT_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
 
                 <input
-                  placeholder="Price"
                   type="number"
+                  placeholder="Price"
                   value={v.price}
                   onChange={(e) =>
                     updateVariant(index, "price", e.target.value)
                   }
-                  className="w-32 border p-2 rounded"
+                  className="w-40 border p-2 rounded"
                 />
 
                 {variants.length > 1 && (
@@ -234,9 +246,10 @@ export default function AddProductForm() {
                     onClick={() => removeVariant(index)}
                     className="text-red-500 font-bold"
                   >
-                    X
+                    ✕
                   </button>
                 )}
+
               </div>
             ))}
 
@@ -247,24 +260,31 @@ export default function AddProductForm() {
             >
               + Add Variant
             </button>
+
           </div>
 
           {/* MAIN IMAGE */}
+
           <div>
             <p className="font-semibold">Main Image</p>
+
             <input
               type="file"
               accept="image/*"
               onChange={handleMainImageChange}
             />
+
             {mainImagePreview && (
-              <img src={mainImagePreview} className="w-40 mt-2 rounded" />
+              <img src={mainImagePreview} className="w-40 mt-3 rounded" />
             )}
           </div>
 
-          {/* SUB IMAGES */}
+          {/* GALLERY */}
+
           <div>
-            <p className="font-semibold">Gallery Images (max 10)</p>
+
+            <p className="font-semibold">Gallery Images</p>
+
             <input
               type="file"
               multiple
@@ -272,7 +292,8 @@ export default function AddProductForm() {
               onChange={handleSubImagesChange}
             />
 
-            <div className="flex gap-2 flex-wrap mt-3">
+            <div className="flex flex-wrap gap-3 mt-3">
+
               {subImagePreviews.map((img, i) => (
                 <img
                   key={i}
@@ -280,16 +301,20 @@ export default function AddProductForm() {
                   className="w-24 h-24 object-cover rounded"
                 />
               ))}
+
             </div>
+
           </div>
 
           {/* SUBMIT */}
+
           <button
             disabled={loading}
             className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-lg font-semibold"
           >
             {loading ? "Creating..." : "Save Product"}
           </button>
+
         </form>
       </div>
     </div>

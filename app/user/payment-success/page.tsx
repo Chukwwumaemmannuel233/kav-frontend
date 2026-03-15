@@ -52,7 +52,7 @@ function PaymentSuccessPageContent() {
         setLoading(true);
 
         const { data: paymentData } = await API.get(
-          `/payments/verify/${reference}`
+          `/payments/verify/${reference}`,
         );
 
         if (paymentData?.data?.status !== "success") {
@@ -65,7 +65,7 @@ function PaymentSuccessPageContent() {
         setStatus("success");
 
         const { data: orderData } = await API.get(
-          `/payments/orders/by-reference/${reference}`
+          `/payments/orders/by-reference/${reference}`,
         );
 
         if (!orderData?.order) {
@@ -78,8 +78,7 @@ function PaymentSuccessPageContent() {
       } catch (err: any) {
         console.error("Payment verification error:", err);
         toast.error(
-          err.response?.data?.message ||
-            "Something went wrong. Try again ❌"
+          err.response?.data?.message || "Something went wrong. Try again ❌",
         );
         setStatus("failed");
       } finally {
@@ -93,7 +92,7 @@ function PaymentSuccessPageContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg font-medium">
+        <p className="text-lg font-medium text-neutral-800 dark:text-neutral-200">
           Verifying your payment...
         </p>
       </div>
@@ -101,7 +100,7 @@ function PaymentSuccessPageContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-neutral-50">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
       {status === "success" && <Confetti numberOfPieces={200} />}
 
       {status === "success" && (
@@ -111,7 +110,7 @@ function PaymentSuccessPageContent() {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="flex items-center justify-center mt-6"
         >
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white shadow-xl flex items-center justify-center">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white dark:bg-neutral-900 shadow-xl flex items-center justify-center">
             <svg
               width="60"
               height="60"
@@ -135,10 +134,8 @@ function PaymentSuccessPageContent() {
         </motion.div>
       )}
 
-      <p className="mt-4 text-lg font-semibold text-gray-800">
-        {status === "success"
-          ? "Payment Successful"
-          : "Payment Failed"}
+      <p className="mt-4 text-lg font-semibold text-neutral-900 dark:text-white">
+        {status === "success" ? "Payment Successful" : "Payment Failed"}
       </p>
 
       {order && (
@@ -147,8 +144,8 @@ function PaymentSuccessPageContent() {
             order.payment_status === "paid"
               ? "bg-green-600"
               : order.payment_status === "pending"
-              ? "bg-yellow-500"
-              : "bg-red-500"
+                ? "bg-yellow-500"
+                : "bg-red-500"
           }`}
         >
           Payment: {order.payment_status}
@@ -156,61 +153,46 @@ function PaymentSuccessPageContent() {
       )}
 
       {status === "success" && order ? (
-        <div className="bg-white rounded-lg shadow p-6 w-full max-w-xl mt-4">
-          <h2 className="text-xl font-semibold mb-4">
-            Order Summary
-          </h2>
+        <div className="bg-white dark:bg-neutral-900 rounded-lg shadow p-6 w-full max-w-xl mt-4 border border-neutral-200 dark:border-neutral-800">
+          <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
-          <div className="grid grid-cols-12 gap-2 border-b pb-2 font-semibold text-gray-700">
+          <div className="grid grid-cols-12 gap-2 border-b border-neutral-200 dark:border-neutral-700 pb-2 font-semibold text-neutral-700 dark:text-neutral-300">
             <span className="col-span-6">Product</span>
             <span className="col-span-2 text-center">Qty</span>
-            <span className="col-span-4 text-right">
-              Subtotal
-            </span>
+            <span className="col-span-4 text-right">Subtotal</span>
           </div>
 
-          <ul className="divide-y divide-gray-200 mt-2">
+          <ul className="divide-y divide-neutral-200 dark:divide-neutral-700 mt-2">
             {order.items.map((item) => (
               <li
                 key={item.product_id}
                 className="py-2 grid grid-cols-12 items-center"
               >
-                <span className="col-span-6">
-                  {item.name}
-                </span>
-                <span className="col-span-2 text-center">
-                  {item.quantity}
-                </span>
+                <span className="col-span-6">{item.name}</span>
+                <span className="col-span-2 text-center">{item.quantity}</span>
                 <span className="col-span-4 text-right">
-                  ₦
-                  {(
-                    item.price * item.quantity
-                  ).toLocaleString()}
+                  ₦{(item.price * item.quantity).toLocaleString()}
                 </span>
               </li>
             ))}
           </ul>
 
-          <div className="border-t pt-4 flex justify-between font-bold text-lg mt-4">
+          <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4 flex justify-between font-bold text-lg mt-4">
             <span>Total Paid</span>
-            <span>
-              ₦{order.total.toLocaleString()}
-            </span>
+            <span>₦{order.total.toLocaleString()}</span>
           </div>
         </div>
       ) : (
         status === "failed" && (
-          <p className="text-center mt-4 text-red-500">
+          <p className="text-center mt-4 text-red-500 dark:text-red-400">
             Payment verification failed. Please contact support.
           </p>
         )
       )}
 
       <Button
-        onClick={() =>
-          router.push("/user/dashboard")
-        }
-        className="bg-black text-white mt-6 px-6 py-3 rounded-lg"
+        onClick={() => router.push("/user/dashboard")}
+        className="bg-black text-white dark:bg-white dark:text-black mt-6 px-6 py-3 rounded-lg hover:bg-neutral-900 dark:hover:bg-neutral-200 transition"
       >
         Go to Home
       </Button>

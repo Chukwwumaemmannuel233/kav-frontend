@@ -101,7 +101,7 @@ export default function FabricRequestModal({ isOpen, onClose }) {
   =============================== */
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white w-[95%] max-w-md rounded-xl p-6 relative">
+      <div className="bg-background w-[95%] max-w-md rounded-xl p-6 relative">
         {/* CLOSE BUTTON */}
         <button onClick={onClose} className="absolute right-4 top-3 text-xl">
           ✕

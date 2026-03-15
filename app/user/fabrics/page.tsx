@@ -111,12 +111,12 @@ export default function FabricsPage() {
     <>
       <SiteHeader variant="user" />
 
-      <main className="px-6 md:px-16 py-10 pb-24">
-
+      <main className="px-6 md:px-16 py-10 pb-24 bg-background">
         {/* FABRIC FINDER BUTTON */}
         <button
           onClick={() => setOpen(true)}
-          className="bg-black text-white px-6 py-3 rounded-lg mb-6"
+          className="px-6 py-3 rounded-lg mb-6 bg-neutral-900 text-white hover:bg-neutral-800 
+             dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
         >
           Can't find fabric? Send sample
         </button>
@@ -141,7 +141,7 @@ export default function FabricsPage() {
             />
 
             {showCategories && (
-              <div className="absolute top-full left-0 right-0 bg-white border rounded-md shadow-md z-20 mt-1">
+              <div className="absolute top-full left-0 right-0 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-md z-20 mt-1 bg-white dark:bg-neutral-900">
                 {["All", "Cotton", "Silk", "Linen"].map((cat) => (
                   <button
                     key={cat}
@@ -151,7 +151,7 @@ export default function FabricsPage() {
                       setPage(1);
                       setShowCategories(false);
                     }}
-                    className="block w-full text-left px-3 py-2 text-sm hover:bg-neutral-100"
+                    className="block w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   >
                     {cat}
                   </button>
@@ -231,10 +231,7 @@ export default function FabricsPage() {
       </main>
 
       {/* ✅ USE COMPONENT MODAL HERE */}
-      <FabricRequestModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-      />
+      <FabricRequestModal isOpen={open} onClose={() => setOpen(false)} />
     </>
   );
 }

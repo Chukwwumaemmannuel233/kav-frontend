@@ -102,75 +102,83 @@ export default function AccountPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-white">
-      <SiteHeader variant="user" />
+  <main className="min-h-screen bg-white dark:bg-black transition-colors">
+    <SiteHeader variant="user" />
 
-      {/* Hero Section */}
-      <section className="px-6 md:px-8 py-12 md:py-16 text-center max-w-5xl mx-auto flex flex-col items-center gap-4">
-        {/* Profile Image */}
-        <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
-          {user.image ? (
-            <img
-              src={user.image}
-              alt={user.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="flex items-center justify-center h-full w-full text-gray-500">
-              No Image
-            </span>
-          )}
-        </div>
+    {/* Hero Section */}
+    <section className="px-6 md:px-8 py-12 md:py-16 text-center max-w-5xl mx-auto flex flex-col items-center gap-4">
 
-        {/* Welcome Text */}
-        <p className="text-neutral-700">
-          Welcome back,{" "}
-          <span className="font-semibold">{user.name || "User"}</span>! Manage
-          your details, orders, and favorites.
-        </p>
-      </section>
+      {/* Profile Image */}
+      <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 dark:bg-neutral-800">
+        {user.image ? (
+          <img
+            src={user.image}
+            alt={user.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="flex items-center justify-center h-full w-full text-gray-500 dark:text-neutral-400">
+            No Image
+          </span>
+        )}
+      </div>
 
-      {/* Account Options Grid */}
-      <section className="px-6 md:px-8 pb-24 max-w-5xl mx-auto">
-        <div className="space-y-4">
-          {accountOptions.map((option) => {
-            const IconComponent = option.icon;
-            return (
-              <Link key={option.id} href={option.href}>
-                <div className="flex items-center gap-4 p-6 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors cursor-pointer">
-                  {/* Icon Circle */}
-                  <div className="flex-shrink-0 w-12 h-12 bg-neutral-200 rounded-full flex items-center justify-center">
-                    <IconComponent className="w-6 h-6 text-neutral-700" />
-                  </div>
+      {/* Welcome Text */}
+      <p className="text-neutral-700 dark:text-neutral-300">
+        Welcome back,{" "}
+        <span className="font-semibold text-neutral-900 dark:text-white">
+          {user.name || "User"}
+        </span>
+        ! Manage your details, orders, and favorites.
+      </p>
+    </section>
 
-                  {/* Content */}
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-neutral-900">
-                      {option.title}
-                    </h3>
-                    <p className="text-neutral-600">{option.description}</p>
-                  </div>
+    {/* Account Options Grid */}
+    <section className="px-6 md:px-8 pb-24 max-w-5xl mx-auto">
+      <div className="space-y-4">
+        {accountOptions.map((option) => {
+          const IconComponent = option.icon;
 
-                  {/* Arrow */}
-                  <div className="flex-shrink-0">
-                    <ChevronRight className="w-6 h-6 text-neutral-400" />
-                  </div>
+          return (
+            <Link key={option.id} href={option.href}>
+              <div className="flex items-center gap-4 p-6 border border-neutral-200 dark:border-neutral-800 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors cursor-pointer">
+
+                {/* Icon Circle */}
+                <div className="flex-shrink-0 w-12 h-12 bg-neutral-200 dark:bg-neutral-800 rounded-full flex items-center justify-center">
+                  <IconComponent className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
                 </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* Log Out */}
-      <section className="px-6 md:px-8 pb-16 max-w-5xl mx-auto text-center border-t border-neutral-200 pt-8">
-        <button
-          onClick={handleLogout}
-          className="text-neutral-700 hover:text-neutral-900 underline font-medium transition-colors"
-        >
-          Log Out
-        </button>
-      </section>
-    </main>
-  );
+                {/* Content */}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">
+                    {option.title}
+                  </h3>
+                  <p className="text-neutral-600 dark:text-neutral-400">
+                    {option.description}
+                  </p>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex-shrink-0">
+                  <ChevronRight className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
+                </div>
+
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+
+    {/* Log Out */}
+    <section className="px-6 md:px-8 pb-16 max-w-5xl mx-auto text-center border-t border-neutral-200 dark:border-neutral-800 pt-8">
+      <button
+        onClick={handleLogout}
+        className="text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white underline font-medium transition-colors"
+      >
+        Log Out
+      </button>
+    </section>
+  </main>
+);
 }

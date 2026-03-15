@@ -7,8 +7,6 @@ import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import API from "@/lib/api";
 
-
-
 interface ApiProduct {
   id: number;
   name: string;
@@ -62,82 +60,76 @@ export default function Dashboard() {
 
   const [recommendationReason, setRecommendationReason] = useState("");
   const [journalPosts, setJournalPosts] = useState<JournalPost[]>([]);
-const [loadingJournal, setLoadingJournal] = useState(true);
-const [userName, setUserName] = useState<string>("");
-
-
-useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const { data } = await API.get("/user/profile");
-
-      if (data?.user?.name) {
-        setUserName(data.user.name);
-      }
-    } catch (error) {
-      console.error("Failed to fetch user profile");
-    }
-  };
-
-  fetchUser();
-}, []);
-
- useEffect(() => {
-  API.get("/products/new-arrivals", { params: { limit: 4 } })
-    .then((res) => {
-      const products = (res.data.products || []).map((p: ApiProduct) => ({
-        ...p,
-        isFavorited: false,
-      }));
-      setNewArrivals(products);
-      fetchFavorites(); // keep as-is
-    })
-    .catch(console.error)
-    .finally(() => setLoadingNewArrivals(false));
-}, []);
-
-
- useEffect(() => {
-  API.get("/lookbook/featured")
-    .then((res) => {
-      if (res.data.success && res.data.lookbook?.image_urls?.length) {
-        setFeaturedLookbook(res.data.lookbook);
-      } else {
-        setFeaturedLookbook(null);
-      }
-    })
-    .catch(console.error)
-    .finally(() => setLoadingLookbook(false));
-}, []);
-
+  const [loadingJournal, setLoadingJournal] = useState(true);
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
-  API.get("/recommendations")
-    .then((res) => {
-      if (res.data.success) {
-        setRecommendations(res.data.products || []);
-        setRecommendationReason(res.data.reason || "Just for you");
+    const fetchUser = async () => {
+      try {
+        const { data } = await API.get("/user/profile");
+
+        if (data?.user?.name) {
+          setUserName(data.user.name);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile");
       }
-    })
-    .catch(() => {
-      console.error("Failed to fetch recommendations");
-    })
-    .finally(() => setLoadingRecommendations(false));
-}, []);
+    };
 
+    fetchUser();
+  }, []);
 
+  useEffect(() => {
+    API.get("/products/new-arrivals", { params: { limit: 4 } })
+      .then((res) => {
+        const products = (res.data.products || []).map((p: ApiProduct) => ({
+          ...p,
+          isFavorited: false,
+        }));
+        setNewArrivals(products);
+        fetchFavorites(); // keep as-is
+      })
+      .catch(console.error)
+      .finally(() => setLoadingNewArrivals(false));
+  }, []);
 
- useEffect(() => {
-  API.get("/journal", { params: { limit: 2 } })
-    .then((res) => {
-      if (res.data.success) {
-        setJournalPosts(res.data.posts.slice(0, 2));
-      }
-    })
-    .catch(console.error)
-    .finally(() => setLoadingJournal(false));
-}, []);
+  useEffect(() => {
+    API.get("/lookbook/featured")
+      .then((res) => {
+        if (res.data.success && res.data.lookbook?.image_urls?.length) {
+          setFeaturedLookbook(res.data.lookbook);
+        } else {
+          setFeaturedLookbook(null);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoadingLookbook(false));
+  }, []);
 
+  useEffect(() => {
+    API.get("/recommendations")
+      .then((res) => {
+        if (res.data.success) {
+          setRecommendations(res.data.products || []);
+          setRecommendationReason(res.data.reason || "Just for you");
+        }
+      })
+      .catch(() => {
+        console.error("Failed to fetch recommendations");
+      })
+      .finally(() => setLoadingRecommendations(false));
+  }, []);
+
+  useEffect(() => {
+    API.get("/journal", { params: { limit: 2 } })
+      .then((res) => {
+        if (res.data.success) {
+          setJournalPosts(res.data.posts.slice(0, 2));
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoadingJournal(false));
+  }, []);
 
   // const recommendedProducts: RecommendedProduct[] = [
   //   {
@@ -175,58 +167,68 @@ useEffect(() => {
 
   const [loadingFavIds, setLoadingFavIds] = useState<number[]>([]);
 
- const fetchFavorites = async () => {
-  try {
-    const res = await API.get("/favorites");
-    const favIds = res.data.favorites.map((f: any) => f.id);
+  const fetchFavorites = async () => {
+    try {
+      const res = await API.get("/favorites");
+      const favIds = res.data.favorites.map((f: any) => f.id);
 
-    setNewArrivals((prev) =>
-      prev.map((p) => ({
-        ...p,
-        isFavorited: favIds.includes(p.id),
-      })),
-    );
-  } catch (err) {
-    console.error("Failed to fetch favorites");
-  }
-};
-
-const toggleFavorite = async (productId: number, isFavorited: boolean) => {
-  try {
-    setLoadingFavIds((prev) => [...prev, productId]);
-
-    if (isFavorited) {
-      await API.delete(`/favorites/${productId}`);
-    } else {
-      await API.post(`/favorites`, { productId });
+      setNewArrivals((prev) =>
+        prev.map((p) => ({
+          ...p,
+          isFavorited: favIds.includes(p.id),
+        })),
+      );
+    } catch (err) {
+      console.error("Failed to fetch favorites");
     }
+  };
 
-    setNewArrivals((prev) =>
-      prev.map((p) =>
-        p.id === productId ? { ...p, isFavorited: !isFavorited } : p,
-      ),
-    );
-  } catch (err) {
-    console.error("Failed to toggle favorite");
-  } finally {
-    setLoadingFavIds((prev) => prev.filter((id) => id !== productId));
-  }
-};
+  const toggleFavorite = async (productId: number, isFavorited: boolean) => {
+    try {
+      setLoadingFavIds((prev) => [...prev, productId]);
 
+      if (isFavorited) {
+        await API.delete(`/favorites/${productId}`);
+      } else {
+        await API.post(`/favorites`, { productId });
+      }
+
+      setNewArrivals((prev) =>
+        prev.map((p) =>
+          p.id === productId ? { ...p, isFavorited: !isFavorited } : p,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to toggle favorite");
+    } finally {
+      setLoadingFavIds((prev) => prev.filter((id) => id !== productId));
+    }
+  };
 
   return (
-    <div className="min-h-screen">
+    <div className="bg-background min-h-screen">
       <SiteHeader variant="user" />
 
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center md:mb-16">
-            <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-               Welcome Back{userName ? `, ${userName}` : ""} 
-            </h1>
-            <p className="mt-3 text-base font-normal text-neutral-600 sm:text-lg">
-              Your curated space for inspiration and new arrivals.
-            </p>
+          <div className="mb-12 md:mb-16">
+            <div className="bg-neutral-100 dark:bg-neutral-800 rounded-xl p-6 sm:p-8 lg:p-12 w-full border border-neutral-200 dark:border-neutral-700">
+              {/* Label */}
+              <p className="text-xs font-semibold tracking-widest text-blue-600 uppercase mb-3">
+                Member Exclusive
+              </p>
+
+              {/* Heading */}
+              <h1 className="text-2xl font-bold leading-tight text-neutral-900 dark:text-white sm:text-3xl lg:text-4xl xl:text-2xl">
+                Welcome Back{userName ? `, ${userName}` : ""}
+              </h1>
+
+              {/* Description */}
+              <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-400 sm:text-base lg:text-lg leading-relaxed max-w-2xl">
+                Discover your curated style for today. Explore the latest
+                additions to your favorite designers.
+              </p>
+            </div>
           </div>
 
           <div className="space-y-16">
@@ -246,7 +248,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                   <Link
                     href="/user/new-arrivals"
                     onClick={() => setNavigating(true)}
-                    className="text-sm font-mediumbg-background hover:underline"
+                    className="text-sm font-medium hover:underline"
                   >
                     View All
                   </Link>
@@ -283,12 +285,13 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                           }
                         />
                       </button>
-
-                      <img
-                        src={product.image_url || "/placeholder.svg"}
-                        alt={product.name}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
+                      <Link href={`/user/fabrics/${product.id}`}>
+                        <img
+                          src={product.image_url || "/placeholder.svg"}
+                          alt={product.name}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </Link>
 
                       {/* NEW badge */}
                       <span className="absolute top-3 left-3 text-xs px-2 py-1 rounded">
@@ -297,10 +300,8 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                     </div>
 
                     <div className="mt-2 text-sm">
-                      <h3 className="font-medium  truncate">
-                        {product.name}
-                      </h3>
-                      <p className="mt-1 font-medium ">
+                      <h3 className="font-medium truncate">{product.name}</h3>
+                      <p className="mt-1 font-medium">
                         ₦{Number(product.price || 0).toLocaleString()}
                       </p>
                     </div>
@@ -340,7 +341,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
                     {/* Text */}
-                    <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 z-10 text-white">
+                    <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 z-10">
                       <p className="text-sm uppercase tracking-widest">
                         Featured Lookbook
                       </p>
@@ -348,7 +349,7 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
                         {featuredLookbook.title}
                       </h3>
                       {featuredLookbook.subtitle && (
-                        <p className="mt-1 text-sm text-white/90">
+                        <p className="mt-1 text-sm">
                           {featuredLookbook.subtitle}
                         </p>
                       )}
@@ -365,70 +366,77 @@ const toggleFavorite = async (productId: number, isFavorited: boolean) => {
             </section>
 
             {/* Just For You Section */}
-            <section>
-              <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
-                <div className="md:col-span-1">
-                  <h2 className="text-2xl font-bold leading-tight tracking-tight  sm:text-3xl">
-                    Just For You
-                  </h2>
-                  <p className="text-xs text-neutral-500">
-                    {recommendationReason}
+            <section className="mt-12">
+              {/* Title */}
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold sm:text-3xl">Just For You</h2>
+                <p className="text-sm text-neutral-500">
+                  {recommendationReason}
+                </p>
+              </div>
+
+              {/* Products Scroll */}
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                {loadingRecommendations && <p>Loading recommendations…</p>}
+
+                {!loadingRecommendations && recommendations.length === 0 && (
+                  <p className="text-neutral-500">
+                    No recommendations yet. Start exploring products.
                   </p>
-                </div>
+                )}
 
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:col-span-2">
-                  {loadingRecommendations && <p>Loading recommendations…</p>}
+                {recommendations.map((product) => (
+                  <Link
+                    key={product.id}
+                    href={`/user/products/${product.id}`}
+                    className="group flex min-w-[260px] items-center gap-4 rounded-xl 
+        bg-neutral-100 dark:bg-neutral-800 p-4
+        hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                  >
+                    {/* Image */}
+                    <div className="aspect-square w-16 flex-shrink-0 overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-700">
+                      <img
+                        src={product.image_url || "/placeholder.svg"}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
 
-                  {!loadingRecommendations && recommendations.length === 0 && (
-                    <p className="text-neutral-500">
-                      No recommendations yet. Start exploring products.
-                    </p>
-                  )}
+                    {/* Info */}
+                    <div>
+                      <h3 className="text-sm font-medium leading-tight group-hover:underline">
+                        {product.name}
+                      </h3>
 
-                  {recommendations.map((product) => (
-                    <Link
-                      key={product.id}
-                      href={`/user/products/${product.id}`}
-                      className="group flex items-center gap-4 rounded-lg bg-neutral-100/50 p-4 hover:bg-neutral-100 transition"
-                    >
-                      <div className="aspect-square w-20 flex-shrink-0 overflow-hidden rounded-md bg-neutral-200">
-                        <img
-                          src={product.image_url || "/placeholder.svg"}
-                          alt={product.name}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </div>
-
-                      <div>
-                        <h3 className="text-base font-medium leading-tight  group-hover:underline">
-                          {product.name}
-                        </h3>
-                        <p className="text-sm font-medium ">
-                          ₦{Number(product.price).toLocaleString()}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                      <p className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
+                        ₦{Number(product.price).toLocaleString()}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </section>
 
             {/* From the Journal Section */}
             <section>
               <div className="flex items-center justify-between gap-4 mb-6">
-                <h2 className="text-2xl font-bold leading-tight tracking-tight  sm:text-3xl">
+                <h2 className="text-2xl font-bold leading-tight tracking-tight sm:text-2xl">
                   From the Journal
                 </h2>
                 <Link
                   href="/user/Journal"
-                  className="text-sm font-medium  hover:underline"
+                  className="text-sm font-medium hover:underline"
                 >
                   Read All
                 </Link>
               </div>
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 {journalPosts.map((post) => (
-                  <Link key={post.id}  href={`/user/Journal/${post.id}`} className="group">
+                  <Link
+                    key={post.id}
+                    href={`/user/Journal/${post.id}`}
+                    className="group"
+                  >
                     <div className="aspect-video w-full overflow-hidden rounded-lg bg-neutral-200">
                       <img
                         src={post.image || "/placeholder.svg"}

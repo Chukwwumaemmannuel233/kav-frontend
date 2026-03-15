@@ -73,26 +73,25 @@ export default function ProductPage() {
   };
 
   /* ADD TO CART USING API */
- const handleAddToCart = async () => {
-  if (!selectedVariant) {
-    toast.error("Please select a variant");
-    return;
-  }
+  const handleAddToCart = async () => {
+    if (!selectedVariant) {
+      toast.error("Please select a variant");
+      return;
+    }
 
-  if (isAdding) return;
+    if (isAdding) return;
 
-  setIsAdding(true);
+    setIsAdding(true);
 
-  try {
-    await addToCart(product.id, quantity, selectedVariant); // ONLY THIS
-    setQuantity(1);
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || "Failed to add to cart");
-  } finally {
-    setIsAdding(false);
-  }
-};
-
+    try {
+      await addToCart(product.id, quantity, selectedVariant); // ONLY THIS
+      setQuantity(1);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to add to cart");
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   const isOutOfStock = !selectedVariant || selectedVariant.stock_quantity <= 0;
 
@@ -111,12 +110,12 @@ export default function ProductPage() {
     );
 
   return (
-    <main className="bg-white min-h-screen">
+    <main className="bg-background min-h-screen">
       <div className="px-6 md:px-16 py-6 border-b">
-        <nav className="text-sm text-neutral-600">
+        <nav className="text-sm text-neutral-500">
           <Link href="/user/dashboard">Home</Link> /{" "}
           <Link href="/user/fabrics">Fabrics</Link> /{" "}
-          <span className="text-black">{product.name}</span>
+          <span>{product.name}</span>
         </nav>
       </div>
 
@@ -161,7 +160,7 @@ export default function ProductPage() {
             <h1 className="text-2xl font-bold mb-3">{product.name}</h1>
 
             <p className="text-1xl font-semibold mb-6">
-              ₦{selectedVariant?.price?.toFixed(2) ?? "0.00"} /{" "}
+              ₦{Number(selectedVariant?.price ?? 0).toLocaleString()} /{" "}
               {selectedVariant?.type ?? ""}
             </p>
 
@@ -170,6 +169,7 @@ export default function ProductPage() {
                 <label className="block text-sm font-medium mb-2">
                   Select Option
                 </label>
+
                 <select
                   value={selectedVariant?.id || ""}
                   onChange={(e) =>
@@ -179,12 +179,15 @@ export default function ProductPage() {
                       ),
                     )
                   }
-                  className="w-44 border px-3 py-2 rounded-md"
+                  className="w-44 border border-neutral-300 dark:border-neutral-700 
+                 bg-white dark:bg-neutral-900 
+                 text-black dark:text-white
+                 px-3 py-2 rounded-md transition-colors"
                 >
                   {product.variants.map((v: any) => (
                     <option key={v.id} value={v.id}>
                       {(v.type ?? "DEFAULT").toUpperCase()} – ₦
-                      {(v.price ?? 0).toFixed(2)}
+                      {(v.price ?? 0).toLocaleString()}
                     </option>
                   ))}
                 </select>
@@ -215,7 +218,8 @@ export default function ProductPage() {
               onClick={handleAddToCart}
               isLoading={isAdding}
               disabled={isOutOfStock}
-              className="w-full bg-black text-white py-4 rounded-full"
+              className="w-full py-4 rounded-full bg-black text-white hover:bg-neutral-800 
+             dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-colors"
             >
               {isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}
             </Button>

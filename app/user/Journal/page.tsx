@@ -29,7 +29,7 @@ export default function JournalPage() {
   }, []);
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-background min-h-screen">
       <SiteHeader variant="user" />
 
       <main className="mx-auto max-w-7xl px-4 py-20">
@@ -38,7 +38,7 @@ export default function JournalPage() {
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
             Journal
           </h1>
-          <p className="mt-3 text-neutral-600 max-w-xl mx-auto">
+          <p className="mt-3 text-neutral-500 max-w-xl mx-auto">
             Stories, fabric knowledge, and inspiration behind our collections.
           </p>
         </div>
@@ -74,7 +74,7 @@ export default function JournalPage() {
                 <h3 className="mt-1 text-lg font-medium group-hover:underline">
                   {post.title}
                 </h3>
-                <p className="mt-2 text-sm text-neutral-600 line-clamp-2">
+                <p className="mt-2 text-sm text-neutral-400 line-clamp-2">
                   {post.excerpt}
                 </p>
               </div>

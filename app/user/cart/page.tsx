@@ -17,7 +17,7 @@ export default function CartPage() {
   /* ---------------- TOTALS ---------------- */
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
   // const shipping = 10;
@@ -35,26 +35,22 @@ export default function CartPage() {
     window.location.href = "/user/fabrics";
   };
 
- const handleRemove = async (
-  productId: number,
-  variantId?: number
-) => {
-  const confirmed = window.confirm(
-    "Are you sure you want to remove this item from your cart?"
-  );
+  const handleRemove = async (productId: number, variantId?: number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to remove this item from your cart?",
+    );
 
-  if (!confirmed) return;
+    if (!confirmed) return;
 
-  await removeFromCart(productId, variantId);
-};
-
+    await removeFromCart(productId, variantId);
+  };
 
   /* ---------------- CLEAR ALL ---------------- */
   const handleClearCart = async () => {
     if (items.length === 0) return;
 
     const confirmed = window.confirm(
-      "Are you sure you want to clear your entire cart?"
+      "Are you sure you want to clear your entire cart?",
     );
 
     if (!confirmed) return;
@@ -65,7 +61,7 @@ export default function CartPage() {
   };
 
   return (
-    <main className="bg-white min-h-screen pb-20 md:pb-0">
+    <main className="bg-background min-h-screen pb-20 md:pb-0">
       <SiteHeader variant="user" />
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
@@ -138,17 +134,17 @@ export default function CartPage() {
                     </div>
 
                     <div className="flex items-center justify-between mt-4">
-                      <div className="flex items-center gap-3 bg-neutral-100 px-3 py-2 rounded">
+                      <div className="flex items-center gap-3 bg-neutral-100 dark:bg-neutral-800 px-3 py-2 rounded">
                         <button
                           onClick={() =>
                             updateQuantity(
                               item.productId,
                               item.quantity - 1,
-                              item.variantId
+                              item.variantId,
                             )
                           }
                           disabled={item.quantity <= 1}
-                          className="px-2"
+                          className="px-2 "
                         >
                           −
                         </button>
@@ -160,7 +156,7 @@ export default function CartPage() {
                             updateQuantity(
                               item.productId,
                               item.quantity + 1,
-                              item.variantId
+                              item.variantId,
                             )
                           }
                           className="px-2"
@@ -174,7 +170,7 @@ export default function CartPage() {
                       </p> */}
 
                       <p className="text-sm text-neutral-500">
-                        ₦{item.price.toFixed(2)}
+                        ₦{item.price.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -184,24 +180,20 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div>
-              <div className="bg-neutral-50 rounded-lg p-6 sticky top-24">
+              <div className="bg-neutral-50 dark:bg-neutral-900 rounded-lg p-6 sticky top-24">
                 <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
 
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>₦{subtotal.toFixed(2)}</span>
+                    <span>₦{subtotal.toLocaleString()}</span>
                   </div>
-                  {/* <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span>₦{shipping.toFixed(2)}</span>
-                  </div> */}
                 </div>
 
-                <div className="border-t pt-4 mb-6 flex justify-between">
+                <div className="border-t border-neutral-200 dark:border-neutral-800 pt-4 mb-6 flex justify-between">
                   <span className="text-lg font-bold">Total</span>
                   <span className="text-2xl font-bold">
-                    ₦{total.toFixed(2)}
+                    ₦{total.toLocaleString()}
                   </span>
                 </div>
 
@@ -209,7 +201,10 @@ export default function CartPage() {
                   onClick={handleCheckout}
                   isLoading={isCheckingOut}
                   loadingText="Processing..."
-                  className="w-full bg-black text-white py-3 rounded-full"
+                  className="w-full py-3 rounded-full 
+      bg-black text-white hover:bg-neutral-900
+      dark:bg-white dark:text-black dark:hover:bg-neutral-200
+      transition-colors"
                 >
                   Proceed to Checkout
                 </Button>

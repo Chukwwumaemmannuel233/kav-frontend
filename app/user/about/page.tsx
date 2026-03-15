@@ -58,7 +58,7 @@ export default function AboutPage() {
   };
 
   return (
-    <main className="bg-white">
+    <main className="bg-background">
       <SiteHeader variant="user" />
 
       {/* ================= HERO ================= */}
@@ -77,7 +77,7 @@ export default function AboutPage() {
           <div className="absolute inset-0 bg-black/60" />
         </div>
 
-        <div className="relative z-10 text-center text-white px-6">
+        <div className="relative z-10 text-center px-6">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
             Woven with Purpose
           </h1>
@@ -99,11 +99,11 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <motion.div variants={slideLeft}>
             <h2 className="text-4xl font-bold mb-6">Our Story</h2>
-            <p className="text-neutral-700 mb-4 leading-relaxed">
+            <p className="text-neutral-400 mb-4 leading-relaxed">
               Founded on a passion for authentic materials, our journey began
               with a commitment to quality and traditional techniques.
             </p>
-            <p className="text-neutral-700 leading-relaxed">
+            <p className="text-neutral-400 leading-relaxed">
               Our story is woven with sustainability and timeless craftsmanship.
             </p>
           </motion.div>
@@ -124,13 +124,13 @@ export default function AboutPage() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="px-6 md:px-16 py-20 bg-neutral-50"
+        className="px-6 md:px-16 py-20"
       >
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-16">Our Core Values</h2>
 
           <div className="grid md:grid-cols-3 gap-12">
-            {[ 
+            {[
               {
                 icon: <Shield size={48} />,
                 title: "Sustainability",
@@ -148,11 +148,11 @@ export default function AboutPage() {
               },
             ].map((item, i) => (
               <motion.div key={i} variants={fadeUp}>
-                <div className="flex justify-center mb-6 text-neutral-800">
+                <div className="flex justify-center mb-6 text-neutral-500">
                   {item.icon}
                 </div>
                 <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                <p className="text-neutral-600">{item.text}</p>
+                <p className="text-neutral-400">{item.text}</p>
               </motion.div>
             ))}
           </div>
@@ -178,10 +178,8 @@ export default function AboutPage() {
 
           <motion.div variants={slideRight}>
             <h3 className="text-3xl font-bold mb-2">Victor Ugwu</h3>
-            <p className="text-neutral-600 font-medium mb-6">
-              CEO & Founder
-            </p>
-            <p className="text-neutral-700 leading-relaxed">
+            <p className="text-neutral-600 font-medium mb-6">CEO & Founder</p>
+            <p className="text-neutral-400 leading-relaxed">
               With a lifelong passion for textiles, Victor founded the company
               to bring sustainable, high-quality fabrics to the forefront of
               design.
@@ -196,7 +194,7 @@ export default function AboutPage() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="px-6 md:px-16 py-20 bg-neutral-50"
+        className="px-6 md:px-16 py-20"
       >
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <motion.div variants={slideLeft}>
@@ -204,7 +202,7 @@ export default function AboutPage() {
             <p className="text-neutral-600 font-medium mb-6">
               COO & Head of Operations
             </p>
-            <p className="text-neutral-700 leading-relaxed">
+            <p className="text-neutral-400 leading-relaxed">
               John ensures that our operations align with our core values,
               perfecting sourcing and supply chain excellence.
             </p>
@@ -229,7 +227,7 @@ export default function AboutPage() {
         className="px-6 md:px-16 py-20 text-center"
       >
         <h2 className="text-4xl font-bold mb-6">Our Mission</h2>
-        <p className="text-neutral-700 max-w-2xl mx-auto mb-10">
+        <p className="text-neutral-400 max-w-2xl mx-auto mb-10">
           Our mission is to create textiles that tell a story of conscious
           craftsmanship while respecting the planet.
         </p>
@@ -238,23 +236,32 @@ export default function AboutPage() {
           onClick={handleSubmit}
           isLoading={isExplore}
           loadingText="Loading..."
-          className="bg-black text-white px-8 py-3 font-medium hover:bg-neutral-900 transition"
+          className="px-8 py-3 font-medium 
+             bg-black text-white hover:bg-neutral-900
+             dark:bg-white dark:text-black dark:hover:bg-neutral-200
+             transition-colors"
         >
           Explore Our Collection
         </Button>
       </motion.section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t border-neutral-200 px-6 md:px-16 py-20 bg-white text-center">
-        <div className="flex justify-center gap-6 text-sm text-neutral-600 mb-4">
-          <a href="/user/terms" className="hover:text-black transition">
+      <footer className="border-t border-neutral-500 px-6 md:px-16 py-20 text-center">
+        <div className="flex justify-center gap-6 text-sm text-neutral-400 mb-4">
+          <a
+            href="/user/terms"
+            className="hover:text-black dark:hover:text-white"
+          >
             Terms of Service
           </a>
-          <a href="/user/privacy" className="hover:text-black transition">
+          <a
+            href="/user/privacy"
+            className="hover:text-black dark:hover:text-white"
+          >
             Privacy Policy
           </a>
         </div>
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-neutral-300">
           © 2025 K.A.V TEXTILE. All rights reserved.
         </p>
       </footer>
