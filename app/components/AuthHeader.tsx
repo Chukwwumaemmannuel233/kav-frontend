@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function AuthHeader() {
   return (
-    <header className="fixed top-0 left-0 w-full bg-white border-b border-neutral-200 z-50">
+    <header className="fixed top-0 left-0 w-full bg-background border-b border-neutral-200 dark:border-neutral-800 z-50">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center">
         <Link href="/">
           <Image
@@ -13,7 +13,7 @@ export default function AuthHeader() {
             alt="Fabric Logo"
             width={400}
             height={120}
-            className="h-10 w-auto object-contain"
+            className="h-10 w-auto object-contain dark:invert"
             priority
           />
         </Link>

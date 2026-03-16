@@ -12,31 +12,37 @@ export default function LandingPage() {
   const [newArrivals, setNewArrivals] = useState<any[]>([]);
   const [recommended, setRecommended] = useState<any[]>([]);
   const [journalPosts, setJournalPosts] = useState<any[]>([]);
+  const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
 
   useEffect(() => {
     fetchNewArrivals();
     fetchRecommended();
-     fetchJournalPosts();
+    fetchJournalPosts();
   }, []);
 
-const fetchJournalPosts = async () => {
-  try {
-    const res = await API.get("/journal", { params: { limit: 2 } });
-    setJournalPosts(res.data.posts || []); // adjust based on your API response
-  } catch (err) {
-    console.error("Failed to fetch journal posts", err);
-  }
-};
+  const fetchJournalPosts = async () => {
+    try {
+      const res = await API.get("/journal", { params: { limit: 2 } });
+      setJournalPosts(res.data.posts || []); // adjust based on your API response
+    } catch (err) {
+      console.error("Failed to fetch journal posts", err);
+    }
+  };
 
   // Fetch New Arrivals
   const fetchNewArrivals = async () => {
     try {
+      setLoadingNewArrivals(true);
+
       const res = await API.get("/products/new-arrivals", {
         params: { limit: 4 },
       });
+
       setNewArrivals(res.data.products || []);
     } catch (err) {
       console.error("Failed to fetch new arrivals", err);
+    } finally {
+      setLoadingNewArrivals(false);
     }
   };
 
@@ -103,7 +109,7 @@ const fetchJournalPosts = async () => {
 
         <div className="mt-6 flex justify-center md:justify-start gap-4">
           <Button
-            onClick={() => router.push("/profile")}
+            onClick={() => router.push("/auth/login")}
             className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
           >
             Explore Profile
@@ -115,33 +121,43 @@ const fetchJournalPosts = async () => {
       <section className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex justify-between mb-8">
           <h2 className="text-2xl font-bold">New Arrivals</h2>
-          <Link href="/products" className="text-primary font-semibold">
+          <Link href="/auth/login" className="text-primary font-semibold">
             View All →
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {newArrivals.map((product) => (
-            <Link key={product.id} href={`/user/fabrics/${product.id}`}>
-              <div className="group cursor-pointer transition-transform hover:scale-105">
-                <div className="aspect-[3/4] bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden mb-4">
-                  <Image
-                    src={product.image_url || "/images/placeholder.jpg"}
-                    alt={product.name}
-                    width={400}
-                    height={500}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
+        {loadingNewArrivals && (
+          <p className="text-neutral-500">Loading new arrivals...</p>
+        )}
 
-                <h4 className="font-semibold text-sm">{product.name}</h4>
-                <p className="text-neutral-500 text-sm">
-                  ₦{Number(product.price).toLocaleString()}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {!loadingNewArrivals && newArrivals.length === 0 && (
+          <p className="text-neutral-500">No new arrivals yet.</p>
+        )}
+
+        {!loadingNewArrivals && newArrivals.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {newArrivals.map((product) => (
+              <Link key={product.id} href={`/auth/login`}>
+                <div className="group cursor-pointer transition-transform hover:scale-105">
+                  <div className="aspect-[3/4] bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden mb-4">
+                    <Image
+                      src={product.image_url || "/images/placeholder.jpg"}
+                      alt={product.name}
+                      width={400}
+                      height={500}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+
+                  <h4 className="font-semibold text-sm">{product.name}</h4>
+                  <p className="text-neutral-500 text-sm">
+                    ₦{Number(product.price).toLocaleString()}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* FULL WIDTH BANNER */}
@@ -161,7 +177,7 @@ const fetchJournalPosts = async () => {
             collection yet.
           </p>
           <Link
-            href="/products"
+            href="/auth/login"
             className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-white/90 transition"
           >
             Shop Collection
@@ -177,7 +193,7 @@ const fetchJournalPosts = async () => {
 
         <div className="flex gap-6 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
           {recommended.map((product) => (
-            <Link key={product.id} href={`/user/fabrics/${product.id}`}>
+            <Link key={product.id} href={`/auth/login`}>
               <div className="snap-start min-w-[220px] flex-shrink-0 transition-transform hover:scale-105">
                 <div className="aspect-square rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-800 mb-4">
                   <Image
@@ -208,7 +224,7 @@ const fetchJournalPosts = async () => {
         <div className="grid md:grid-cols-2 gap-10">
           {journalPosts.map((post) => (
             <article key={post.id} className="space-y-4">
-              <Link href={`/journal/${post.id}`}>
+              <Link href={`/auth/login`}>
                 <div className="aspect-video rounded-xl overflow-hidden bg-neutral-200 cursor-pointer">
                   <Image
                     src={post.image || "/images/placeholder.jpg"}
@@ -232,7 +248,7 @@ const fetchJournalPosts = async () => {
               </p>
 
               <Link
-                href={`/journal/${post.id}`}
+                href={`/auth/login`}
                 className="font-semibold border-b border-black dark:border-white"
               >
                 Read More

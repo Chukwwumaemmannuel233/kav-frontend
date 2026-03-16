@@ -44,11 +44,12 @@ export default function SignUpPage() {
   };
 
   return (
-   <div className="min-h-screen bg-neutral-100">
+   <div className="min-h-screen bg-background
+   ">
     <AuthHeader />
 
     <div className="pt-28 px-4 pb-16">
-      <div className="max-w-md mx-auto w-full bg-white p-8 rounded-2xl shadow-md">
+     <div className="max-w-md mx-auto w-full bg-white dark:bg-neutral-900 p-8 rounded-2xl shadow-md border border-neutral-200 dark:border-neutral-800">
         <h1 className="text-2xl font-bold text-center mb-6 tracking-tight">
           Create Account
         </h1>
@@ -65,7 +66,7 @@ export default function SignUpPage() {
               placeholder="Your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none placeholder:text-neutral-400"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-black dark:text-white rounded-lg focus:outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
             />
           </div>
 
@@ -80,7 +81,7 @@ export default function SignUpPage() {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none placeholder:text-neutral-400"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 text-black dark:text-white rounded-lg focus:outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
             />
           </div>
 
@@ -104,7 +105,7 @@ export default function SignUpPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -129,7 +130,7 @@ export default function SignUpPage() {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
               >
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -147,11 +148,11 @@ export default function SignUpPage() {
           </Button>
 
           {/* Login Link */}
-          <p className="text-center text-sm text-neutral-600 mt-4">
+          <p className="text-center text-sm text-neutral-600 dark:text-neutral-400 mt-4">
             Already have an account?{" "}
             <Link
               href="/auth/login"
-              className="text-black font-semibold hover:opacity-70"
+              className="text-black dark:text-white font-semibold hover:opacity-70"
             >
               Log In
             </Link>
