@@ -67,7 +67,7 @@ export default function LandingPage() {
   return (
     <main className="bg-background">
       {/* HEADER */}
-      <header className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between sticky top-0 z-40 bg-background border-b border-neutral-600">
         <div className="text-2xl font-bold">
           <Link href="/" className="hover:opacity-80 transition">
             <Image
