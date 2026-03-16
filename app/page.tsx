@@ -88,12 +88,12 @@ export default function LandingPage() {
             Join Now
           </button>
 
-          <button
+          <Button
             onClick={() => router.push("/auth/login")}
-            className="px-5 py-2.5 rounded-lg bg-primary text-white font-semibold shadow-md hover:bg-primary/90 dark:shadow-none transition"
+           className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
           >
             Login
-          </button>
+          </Button>
         </div>
       </header>
 
