@@ -83,106 +83,131 @@ export default function MessagesPage() {
   const unreadMessages = messages.filter(m => !m.is_read).length
   const unreadFabric = fabricRequests.filter(f => !f.is_read).length // 🔹 add `is_read` field in backend
 
-  return (
-    <div className="min-h-screen bg-neutral-100">
-      <div className="h-[calc(100vh-4rem)] flex gap-4 p-4 md:p-6 pb-24 md:pb-6">
+return (
+  <div className="min-h-screen bg-neutral-100 dark:bg-neutral-950 text-black dark:text-white">
+    <div className="h-[calc(100vh-4rem)] flex gap-4 p-4 md:p-6 pb-24 md:pb-6">
 
-        {/* LIST */}
-        <div className={`${showMobileDetail ? "hidden" : "flex"} md:flex w-full md:w-2/5 bg-white rounded-lg shadow-sm flex-col overflow-hidden`}>
+      {/* LIST */}
+      <div className={`${showMobileDetail ? "hidden" : "flex"} md:flex w-full md:w-2/5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm flex-col overflow-hidden`}>
 
-          {/* HEADER */}
-          <div className="p-6 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold mb-4 md:mb-0">Admin Panel</h1>
-            </div>
-
-            {/* BUTTONS: FABRIC REQUESTS */}
-            <div className="flex gap-4">
-              <Link href="/admin/fabric-requests">
-                <button className="relative bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-700">
-                  <Package size={18} />
-                  Fabric Requests
-                  {unreadFabric > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      {unreadFabric}
-                    </span>
-                  )}
-                </button>
-              </Link>
-            </div>
+        {/* HEADER */}
+        <div className="p-6 border-b border-neutral-200 dark:border-neutral-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-4 md:mb-0 text-black dark:text-white">
+              Admin Panel
+            </h1>
           </div>
 
-          {/* SEARCH */}
-          <div className="p-6 border-b">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={20}/>
-              <input
-                type="text"
-                placeholder="Search messages..."
-                value={searchQuery}
-                onChange={(e)=>setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-neutral-100 rounded-lg"
-              />
-            </div>
-          </div>
-
-          {/* MESSAGE LIST */}
-          <div className="flex-1 overflow-y-auto">
-            {loading ? (
-              <div className="p-6 text-center">Loading...</div>
-            ) : filteredMessages.length === 0 ? (
-              <div className="p-6 text-center">No messages</div>
-            ) : (
-              filteredMessages.map((message)=>(
-                <button
-                  key={message.id}
-                  onClick={()=>handleMessageClick(message)}
-                  className={`w-full p-4 border-b text-left hover:bg-neutral-50 ${
-                    selectedMessage?.id === message.id ? "bg-neutral-100" : ""
-                  }`}
-                >
-                  <div className="flex justify-between mb-1">
-                    <h3 className="font-semibold">{message.full_name}</h3>
-                    <span className="text-xs text-neutral-500">
-                      {new Date(message.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-neutral-700">
-                    {message.subject || "No subject"}
-                  </p>
-
-                  <div className="flex items-center gap-2 mt-1">
-                    {!message.is_read && <div className="w-2 h-2 bg-blue-500 rounded-full"/>}
-                    <p className="text-xs text-neutral-500">{message.email}</p>
-                  </div>
-                </button>
-              ))
-            )}
+          {/* BUTTONS */}
+          <div className="flex gap-4">
+            <Link href="/admin/fabric-requests">
+              <button className="relative bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-orange-700">
+                <Package size={18} />
+                Fabric Requests
+                {unreadFabric > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                    {unreadFabric}
+                  </span>
+                )}
+              </button>
+            </Link>
           </div>
         </div>
 
-        {/* DETAILS */}
-        <div className={`${showMobileDetail ? "flex" : "hidden"} md:flex w-full md:w-3/5 bg-white rounded-lg shadow-sm flex-col`}>
-          {selectedMessage && (
-            <>
-              <div className="p-6 border-b">
-                <button onClick={handleBackToList} className="md:hidden mb-4 flex items-center gap-2">
-                  <ArrowLeft size={18}/> Back
-                </button>
+        {/* SEARCH */}
+        <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" size={20}/>
+            <input
+              type="text"
+              placeholder="Search messages..."
+              value={searchQuery}
+              onChange={(e)=>setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 
+              bg-neutral-100 dark:bg-neutral-800 
+              text-black dark:text-white
+              placeholder:text-neutral-400 dark:placeholder:text-neutral-500
+              rounded-lg outline-none"
+            />
+          </div>
+        </div>
 
-                <h2 className="text-2xl font-bold mb-2">{selectedMessage.subject}</h2>
-                <p className="font-semibold">{selectedMessage.full_name}</p>
-                <p className="text-sm text-neutral-600">{selectedMessage.email}</p>
-              </div>
+        {/* MESSAGE LIST */}
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="p-6 text-center text-neutral-600 dark:text-neutral-400">
+              Loading...
+            </div>
+          ) : filteredMessages.length === 0 ? (
+            <div className="p-6 text-center text-neutral-600 dark:text-neutral-400">
+              No messages
+            </div>
+          ) : (
+            filteredMessages.map((message)=>(
+              <button
+                key={message.id}
+                onClick={()=>handleMessageClick(message)}
+                className={`w-full p-4 border-b border-neutral-200 dark:border-neutral-700 text-left transition
+                hover:bg-neutral-50 dark:hover:bg-neutral-800
+                ${selectedMessage?.id === message.id ? "bg-neutral-100 dark:bg-neutral-800" : ""}`}
+              >
+                <div className="flex justify-between mb-1">
+                  <h3 className="font-semibold text-black dark:text-white">
+                    {message.full_name}
+                  </h3>
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {new Date(message.created_at).toLocaleDateString()}
+                  </span>
+                </div>
 
-              <div className="flex-1 p-6">
-                <p className="whitespace-pre-line">{selectedMessage.message}</p>
-              </div>
-            </>
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                  {message.subject || "No subject"}
+                </p>
+
+                <div className="flex items-center gap-2 mt-1">
+                  {!message.is_read && <div className="w-2 h-2 bg-blue-500 rounded-full"/>}
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {message.email}
+                  </p>
+                </div>
+              </button>
+            ))
           )}
         </div>
       </div>
+
+      {/* DETAILS */}
+      <div className={`${showMobileDetail ? "flex" : "hidden"} md:flex w-full md:w-3/5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm flex-col`}>
+        {selectedMessage && (
+          <>
+            <div className="p-6 border-b border-neutral-200 dark:border-neutral-700">
+              <button
+                onClick={handleBackToList}
+                className="md:hidden mb-4 flex items-center gap-2 text-black dark:text-white"
+              >
+                <ArrowLeft size={18}/> Back
+              </button>
+
+              <h2 className="text-2xl font-bold mb-2 text-black dark:text-white">
+                {selectedMessage.subject}
+              </h2>
+              <p className="font-semibold text-black dark:text-white">
+                {selectedMessage.full_name}
+              </p>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                {selectedMessage.email}
+              </p>
+            </div>
+
+            <div className="flex-1 p-6">
+              <p className="whitespace-pre-line text-neutral-800 dark:text-neutral-200">
+                {selectedMessage.message}
+              </p>
+            </div>
+          </>
+        )}
+      </div>
     </div>
-  )
+  </div>
+)
 }

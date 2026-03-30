@@ -111,95 +111,84 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-
+    <div className="min-h-screen bg-background text-foreground">
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 pb-24 md:pb-8">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2">Dashboard</h1>
-          <p className="text-neutral-600">
+          <p className="text-neutral-600 dark:text-neutral-400">
             An overview of your store's performance.
           </p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          {/* Total Orders */}
-          <div className="bg-white rounded-lg border border-neutral-200 p-6">
-            <p className="text-sm text-neutral-600 mb-2">Total Orders</p>
-            <p className="text-3xl font-bold">{stats.totalOrders}</p>
-          </div>
-
-          {/* Pending Orders */}
-          <div className="bg-white rounded-lg border border-neutral-200 p-6">
-            <p className="text-sm text-neutral-600 mb-2">Pending Orders</p>
-            <p className="text-3xl font-bold">{stats.pendingOrders}</p>
-          </div>
-
-          {/* Total Sales */}
-          <div className="bg-white rounded-lg border border-neutral-200 p-6">
-            <p className="text-sm text-neutral-600 mb-2">Total Sales</p>
-            <p className="text-3xl font-bold">
-              {" "}
-              ₦{Number(stats.totalSales).toLocaleString()}
-            </p>
-          </div>
-          {/* ₦ {stats.totalSales} */}
-          {/* Total Users */}
-          <div className="bg-white rounded-lg border border-neutral-200 p-6">
-            <p className="text-sm text-neutral-600 mb-2">Total Users</p>
-            <p className="text-3xl font-bold">{stats.totalUsers}</p>
-          </div>
-
-          {/* Total Products */}
-          <div className="bg-white rounded-lg border border-neutral-200 p-6">
-            <p className="text-sm text-neutral-600 mb-2">Active Products</p>
-            <p className="text-3xl font-bold">{stats.totalProducts}</p>
-          </div>
+          {[
+            { label: "Total Orders", value: stats.totalOrders },
+            { label: "Pending Orders", value: stats.pendingOrders },
+            {
+              label: "Total Sales",
+              value: `₦${Number(stats.totalSales).toLocaleString()}`,
+            },
+            { label: "Total Users", value: stats.totalUsers },
+            { label: "Active Products", value: stats.totalProducts },
+          ].map((item, i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg p-6"
+            >
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">
+                {item.label}
+              </p>
+              <p className="text-3xl font-bold">{item.value}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Charts and Quick Actions Grid */}
+        {/* Charts + Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Weekly Sales Activity */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-neutral-200 p-4 md:p-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-6">
+          {/* Chart */}
+          <div className="lg:col-span-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-2xl p-4 md:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between mb-6">
               <div>
                 <h2 className="text-lg md:text-xl font-bold">
                   Revenue Analytics
                 </h2>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Weekly performance of your store
                 </p>
               </div>
 
-              <div className="mt-3 sm:mt-0 text-left sm:text-right">
-                <p className="text-sm text-neutral-500">Total Revenue</p>
+              <div className="mt-3 sm:mt-0">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Total Revenue
+                </p>
                 <p className="text-xl md:text-2xl font-bold">
                   ₦{Number(stats.totalSales).toLocaleString()}
                 </p>
               </div>
             </div>
 
-            <div className="w-full h-64 sm:h-80 md:h-96">
+            <div className="w-full h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 10, right: 0, left: -10, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <BarChart data={chartData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#ccc"
+                    className="dark:stroke-neutral-700"
+                  />
 
                   <XAxis
                     dataKey="day"
                     tick={{ fontSize: 10 }}
-                    axisLine={false}
-                    tickLine={false}
+                    stroke="currentColor"
                   />
 
                   <YAxis
                     tickFormatter={(value) => `₦${value / 1000}k`}
-                    axisLine={false}
-                    tickLine={false}
                     tick={{ fontSize: 10 }}
+                    stroke="currentColor"
                   />
 
                   <Tooltip
@@ -207,14 +196,13 @@ export default function AdminDashboard() {
                     contentStyle={{
                       borderRadius: "10px",
                       border: "none",
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
                     }}
                   />
 
                   <Bar
                     dataKey="total"
                     radius={[8, 8, 0, 0]}
-                    className="fill-black"
+                    className="fill-black dark:fill-white"
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -222,38 +210,54 @@ export default function AdminDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg border border-neutral-200 p-6">
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg p-6">
             <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
 
             <div className="space-y-3">
-              {/* Add New Product */}
+              {/* Add Product */}
               <Button
                 onClick={AddNewProduct}
                 isLoading={isNewProduct}
                 loadingText="Redirecting..."
-                className="w-full bg-black text-white rounded-lg p-4 flex items-center justify-between hover:bg-neutral-800 transition"
+                className="w-full bg-black text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 flex justify-between"
               >
-                <span className="font-medium">Add New Product</span>
+                Add New Product
                 <Plus size={20} />
               </Button>
 
-              {/* View Orders */}
+              {/* Orders */}
               <Button
                 onClick={Orders}
                 isLoading={isOrders}
                 loadingText="Redirecting..."
-                className="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between hover:bg-neutral-50 transition"
+                className="
+                    w-full 
+                    bg-neutral-100 text-neutral-900 
+                    dark:bg-neutral-800 dark:text-neutral-100
+                    border border-neutral-200 dark:border-neutral-700
+                    hover:bg-neutral-200 dark:hover:bg-neutral-700
+                    flex justify-between items-center
+                    transition
+                  "
               >
                 <span className="font-medium">View Orders</span>
                 <ArrowRight size={20} />
               </Button>
 
-              {/* View Messages */}
+              {/* Messages */}
               <Button
                 onClick={Messages}
                 isLoading={isMessages}
                 loadingText="Redirecting..."
-                className="w-full bg-white border border-neutral-200 rounded-lg p-4 flex items-center justify-between hover:bg-neutral-50 transition"
+                className="
+                    w-full 
+                    bg-neutral-100 text-neutral-900 
+                    dark:bg-neutral-800 dark:text-neutral-100
+                    border border-neutral-200 dark:border-neutral-700
+                    hover:bg-neutral-200 dark:hover:bg-neutral-700
+                    flex justify-between items-center
+                    transition
+                  "
               >
                 <span className="font-medium">View Messages</span>
                 <ArrowRight size={20} />

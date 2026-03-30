@@ -256,19 +256,19 @@ export default function ContactPage() {
             </p>
             <div className="flex gap-6">
               <Link
-                href="/faq"
+                href="/user/faq"
                 className="text-sm text-neutral-400 hover transition"
               >
                 FAQs
               </Link>
-              <Link
+              {/* <Link
                 href="/user/shipping-returns"
                 className="text-sm text-neutral-400 hover transition"
               >
                 Shipping & Returns
-              </Link>
+              </Link> */}
               <Link
-                href="/privacy"
+                href="/user/privacy"
                 className="text-sm text-neutral-400 hover transition"
               >
                 Privacy Policy

@@ -189,7 +189,7 @@ export default function AboutPage() {
       </motion.section>
 
       {/* ================= TEAM - JOHN ================= */}
-      <motion.section
+      {/* <motion.section
         variants={container}
         initial="hidden"
         whileInView="visible"
@@ -216,7 +216,7 @@ export default function AboutPage() {
             />
           </motion.div>
         </div>
-      </motion.section>
+      </motion.section> */}
 
       {/* ================= MISSION ================= */}
       <motion.section

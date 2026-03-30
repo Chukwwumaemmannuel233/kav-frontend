@@ -1,351 +1,492 @@
-// "use client"
+"use client";
 
-// import { useEffect, useState } from "react"
-// import SiteHeader from "@/components/site-header"
-// import { Edit, Trash2, MapPin, X } from "lucide-react"
-// import { toast } from "sonner"
-// import API from "@/lib/api"
+import { useEffect, useState } from "react";
+import { Search, MoreVertical, RotateCcw, UserX } from "lucide-react";
+import API from "@/lib/api";
+import { toast } from "sonner";
 
-// /* ================= TYPES ================= */
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  signupDate: string;
+  avatar: string;
+  is_active: boolean; // ⭐ ADD THIS
+}
 
-// interface Address {
-//   id: string
-//   full_name: string
-//   phone: string
-//   street_address: string
-//   city: string
-//   state: string
-//   postal_code: string
-//   country: string
-//   is_default: boolean
-// }
 
-// interface AddressForm {
-//   full_name: string
-//   phone: string
-//   street_address: string
-//   city: string
-//   state: string
-//   postal_code: string
-//   country: string
-// }
+interface Order {
+  id: string;
+  date: string;
+  total: number;
+  status: string;
+}
 
-// const emptyForm: AddressForm = {
-//   full_name: "",
-//   phone: "",
-//   street_address: "",
-//   city: "",
-//   state: "",
-//   postal_code: "",
-//   country: "",
-// }
+export default function CustomersPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [showActionMenu, setShowActionMenu] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [orderHistory, setOrderHistory] = useState<Record<string, Order[]>>({});
+  const [showModal, setShowModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [modalUser, setModalUser] = useState<User | null>(null);
 
-// /* ================= COMPONENT ================= */
+  const fetchUsers = async () => {
+    try {
+      const res = await API.get("/admin/users"); // now uses baseURL automatically
 
-// export default function SavedAddressesPage() {
-//   const [addresses, setAddresses] = useState<Address[]>([])
-//   const [loading, setLoading] = useState(true)
+      if (res.data.success) {
+        setUsers(res.data.users);
+        setSelectedUser(res.data.users[0] || null);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//   const [isDialogOpen, setIsDialogOpen] = useState(false)
-//   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
+  // Fetch order history for a user (dummy example, replace with your API)
+  const fetchOrderHistory = async (userId: string) => {
+    try {
+      const res = await API.get(`/admin/users/${userId}`);
 
-//   const [form, setForm] = useState<AddressForm>(emptyForm)
+      if (res.data.success) {
+        setOrderHistory((prev) => ({
+          ...prev,
+          [userId]: res.data.orders,
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching order history:", err);
+    }
+  };
 
-//   /* ================= FETCH ================= */
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-//   const fetchAddresses = async () => {
-//     try {
-//       const { data } = await API.get("/addresses")
-//       setAddresses(data.addresses || [])
-//     } catch {
-//       toast.error("Failed to load addresses")
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
+  useEffect(() => {
+    if (selectedUser) fetchOrderHistory(selectedUser.id);
+  }, [selectedUser]);
 
-//   useEffect(() => {
-//     fetchAddresses()
-//   }, [])
+  useEffect(() => {
+    const closeMenu = () => setShowActionMenu(null);
+    window.addEventListener("click", closeMenu);
 
-//   /* ================= HELPERS ================= */
+    return () => window.removeEventListener("click", closeMenu);
+  }, []);
 
-//   const fillForm = (address: Address) => {
-//     setForm({
-//       full_name: address.full_name,
-//       phone: address.phone,
-//       street_address: address.street_address,
-//       city: address.city,
-//       state: address.state,
-//       postal_code: address.postal_code,
-//       country: address.country,
-//     })
-//   }
+  const openUserModal = (user: User) => {
+    setModalUser(user);
+    setShowUserModal(true);
+    setShowActionMenu(null);
 
-//   /* ================= ACTIONS ================= */
+    // fetch full order history
+    fetchOrderHistory(user.id);
+  };
 
-//   const handleAddNew = () => {
-//     setEditingAddress(null)
-//     setForm(emptyForm)
-//     setIsDialogOpen(true)
-//   }
+  const deactivateUser = (userId: string) => {
+    toast("Deactivate this user?", {
+      description: "They will not be able to login",
 
-//   const handleEdit = (address: Address) => {
-//     setEditingAddress(address)
-//     fillForm(address)
-//     setIsDialogOpen(true)
-//   }
+      action: {
+        label: "Yes",
+        onClick: async () => {
+          try {
+            const res = await API.put(`/admin/users/deactivate/${userId}`);
 
-//   const handleSubmit = async () => {
-//     const toastId = toast.loading(
-//       editingAddress ? "Updating address..." : "Saving address..."
-//     )
+            if (res.data.success) {
+              toast.success("User deactivated");
+              fetchUsers();
+            }
+          } catch (err: any) {
+            toast.error(err?.response?.data?.message || "Error");
+          }
+        },
+      },
 
-//     try {
-//       if (editingAddress) {
-//         await API.put(`/addresses/${editingAddress.id}`, form)
-//         toast.success("Address updated")
-//       } else {
-//         await API.post("/addresses", form)
-//         toast.success("Address added")
-//       }
+      cancel: {
+        label: "Cancel",
+        onClick: () => {}, // REQUIRED by Sonner
+      },
+    });
+  };
 
-//       setIsDialogOpen(false)
-//       setForm(emptyForm)
-//       fetchAddresses()
-//     } catch (err: any) {
-//       toast.error(err.response?.data?.message || "Failed to save address")
-//     } finally {
-//       toast.dismiss(toastId)
-//     }
-//   }
+  const reactivateUser = (userId: string) => {
+    toast("Reactivate this user?", {
+      description: "They will be able to login again",
+      action: {
+        label: "Yes",
+        onClick: async () => {
+          try {
+            const res = await API.put(`/admin/users/reactivate/${userId}`);
 
-//   const handleDelete = async (id: string) => {
-//     if (!confirm("Delete this address?")) return
+            if (res.data.success) {
+              toast.success("User reactivated");
+              fetchUsers();
+            }
+          } catch (err: any) {
+            toast.error(err?.response?.data?.message || "Error");
+          }
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {}, // required by Sonner
+      },
+    });
+  };
 
-//     const toastId = toast.loading("Deleting address...")
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
-//     try {
-//       await API.delete(`/addresses/${id}`)
-//       toast.success("Address deleted")
-//       fetchAddresses()
-//     } catch {
-//       toast.error("Failed to delete address")
-//     } finally {
-//       toast.dismiss(toastId)
-//     }
-//   }
+  if (loading) return <div className="p-10 text-center">Loading users...</div>;
 
-//   const handleSetPrimary = async (id: string) => {
-//     const toastId = toast.loading("Setting primary address...")
+  return (
+    <div className="min-h-screen bg-white dark:bg-neutral-950 text-black dark:text-white">
 
-//     try {
-//       await API.put(`/addresses/${id}/default`)
-//       toast.success("Primary address updated")
-//       fetchAddresses()
-//     } catch {
-//       toast.error("Failed to set primary address")
-//     } finally {
-//       toast.dismiss(toastId)
-//     }
-//   }
+      <div className="px-4 md:px-8 lg:px-16 py-8 pb-24 md:pb-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Side - User List */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold">Users</h1>
+            </div>
 
-//   /* ================= UI ================= */
+            {/* Search Bar */}
+            <div className="mb-6">
+              <div className="relative">
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
+                  size={20}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+            </div>
 
-//   return (
-//     <div className="min-h-screen bg-[#E5DDD5] dark:bg-neutral-900">
-//       <SiteHeader variant="user" />
+            {/* Users Table */}
+           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-x-auto">
+              {/* Desktop Table Header */}
+               <div className="hidden md:block bg-neutral-100 dark:bg-neutral-800 px-6 py-3 border-b border-neutral-200 dark:border-neutral-700">
+                <div className="grid grid-cols-12 gap-4 font-semibold text-sm uppercase text-black dark:text-white">
+                  <div className="col-span-3">Name</div>
+                  <div className="col-span-4">Email</div>
+                  <div className="col-span-3">Signup Date</div>
+                  <div className="col-span-2 text-center">Action</div>
+                </div>
+              </div>
 
-//       <main className="max-w-7xl mx-auto px-4 py-10 pb-24">
-//         <div className="flex justify-between items-center mb-10">
-//           <div>
-//             <h1 className="text-4xl font-bold text-black dark:text-white">
-//               Saved Addresses
-//             </h1>
+             <div className="divide-y divide-neutral-200 dark:divide-neutral-700">
+                {filteredUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className={`px-4 md:px-6 py-4 cursor-pointer transition hover:bg-neutral-50 dark:hover:bg-neutral-800 ${selectedUser?.id === user.id ? "bg-neutral-50 dark:bg-neutral-800" : ""}`}
+                    onClick={() => {
+                      if (showActionMenu) return;
+                      setSelectedUser(user);
+                    }}
+                  >
+                    {/* Mobile Layout */}
+                    <div className="md:hidden flex justify-between relative">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-black dark:text-white">
+                            {user.name}
+                          </div>
+                          <div className="text-sm text-neutral-600 dark:text-neutral-400">
+                            {user.email}
+                          </div>
+                          <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                            {user.signupDate}
+                          </div>
+                        </div>
+                        <div className="relative ml-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowActionMenu(
+                                showActionMenu === user.id ? null : user.id,
+                              );
+                            }}
+                            className="p-2 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg"
+                          >
+                            <MoreVertical size={20} />
+                          </button>
+                          {showActionMenu === user.id && (
+                            <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg z-50">
+                              <button
+                                onClick={() => openUserModal(user)}
+                                className="w-full text-left px-4 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-sm"
+                              >
+                                View details
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-//             <p className="text-neutral-600 dark:text-neutral-400 mt-1">
-//               Manage your delivery addresses
-//             </p>
-//           </div>
+                    {/* Desktop Layout */}
+                    <div className="hidden md:block">
+                      <div className="grid grid-cols-12 gap-4 items-center">
+                        <div className="col-span-3 font-medium truncate">
+                          {user.name}
+                        </div>
+                        <div
+                          className="col-span-4 text-neutral-600 truncate"
+                          title={user.email}
+                        >
+                          {user.email}
+                        </div>
+                        <div className="col-span-3 text-neutral-600">
+                          {user.signupDate}
+                        </div>
+                        <div className="col-span-2 text-center relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowActionMenu(
+                                showActionMenu === user.id ? null : user.id,
+                              );
+                            }}
+                            className="p-2 hover:bg-neutral-200 rounded-lg transition"
+                          >
+                            <MoreVertical size={20} />
+                          </button>
+                          {showActionMenu === user.id && (
+                            <div className="absolute right-0 mt-2 w-44 bg-white border border-neutral-200 rounded-lg shadow-lg z-10">
+                              <button
+                                onClick={() => openUserModal(user)}
+                                className="w-full text-left px-4 py-2 hover:bg-neutral-50 text-sm"
+                              >
+                                View details
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
 
-//           <button
-//             onClick={handleAddNew}
-//             className="bg-black text-white dark:bg-white dark:text-black px-6 py-3 rounded-md"
-//           >
-//             + Add Address
-//           </button>
-//         </div>
+          {/* Right Side - User Details */}
+          <div className="w-full lg:w-96 bg-neutral-100 rounded-lg p-6">
+            {selectedUser && (
+              <>
+                {/* User Profile */}
+                <div className="text-center mb-6">
+                  <div className="w-24 h-24 rounded-full bg-neutral-300 mx-auto mb-4 overflow-hidden">
+                    <img
+                      src={selectedUser.avatar || "/placeholder.svg"}
+                      alt={selectedUser.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h2 className="text-xl font-bold mb-1">
+                    {selectedUser.name}
+                  </h2>
+                  <p className="text-neutral-600 text-sm">
+                    {selectedUser.email}
+                  </p>
+                </div>
 
-//         {loading && (
-//           <p className="text-neutral-600 dark:text-neutral-400">
-//             Loading addresses...
-//           </p>
-//         )}
+                {/* Order History */}
+                <div className="mb-6">
+                  <h3 className="font-semibold text-sm uppercase tracking-wide text-neutral-700 mb-4">
+                    Order History
+                  </h3>
+                  <div className="space-y-3">
+                    {orderHistory[selectedUser.id]?.slice(0, 3).map((order) => (
+                      <div key={order.id} className="bg-white rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-medium">Order {order.id}</p>
+                            <p className="text-xs text-neutral-500">
+                              {order.date}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">
+                              ${Number(order.total).toFixed(2)}
+                            </p>
+                            <span className="inline-block px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
+                              {order.status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {orderHistory[selectedUser.id]?.length > 3 && (
+                    <button
+                      onClick={() => setShowModal(true)}
+                      className="text-sm text-blue-600 mt-2"
+                    >
+                      View full history →
+                    </button>
+                  )}
+                </div>
 
-//         {!loading && addresses.length === 0 && (
-//           <div className="border-2 border-dashed p-12 bg-white dark:bg-neutral-800 text-center rounded-lg">
-//             <MapPin size={32} className="mx-auto mb-4" />
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  {selectedUser && (
+                    <button
+                      onClick={() =>
+                        selectedUser.is_active
+                          ? deactivateUser(selectedUser.id)
+                          : reactivateUser(selectedUser.id)
+                      }
+                      className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition
+        ${selectedUser.is_active ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
+                    >
+                      <UserX size={18} />
+                      {selectedUser.is_active
+                        ? "Deactivate User"
+                        : "Reactivate User"}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
 
-//             <p className="text-lg font-medium mb-2 text-black dark:text-white">
-//               No addresses yet
-//             </p>
+          {/* ================= USER DETAILS MODAL ================= */}
+          {showUserModal && modalUser && (
+            <div
+              className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4"
+              onClick={() => setShowUserModal(false)}
+            >
+              <div
+                className="bg-white w-full max-w-2xl rounded-xl p-6 max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* HEADER */}
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold">User Details</h2>
+                  <button
+                    onClick={() => setShowUserModal(false)}
+                    className="text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
 
-//             <button
-//               onClick={handleAddNew}
-//               className="bg-black text-white dark:bg-white dark:text-black px-6 py-3 rounded-md"
-//             >
-//               Add Address
-//             </button>
-//           </div>
-//         )}
+                {/* USER INFO */}
+                <div className="flex items-center gap-4 mb-6">
+                  <img
+                    src={modalUser.avatar || "/placeholder.png"}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                  <div>
+                    <h3 className="font-bold text-lg">{modalUser.name}</h3>
+                    <p className="text-sm text-neutral-500">
+                      {modalUser.email}
+                    </p>
+                    <p className="text-xs text-neutral-400">
+                      Joined: {modalUser.signupDate}
+                    </p>
+                  </div>
+                </div>
 
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//           {addresses.map((addr) => (
-//             <div
-//               key={addr.id}
-//               className="bg-white dark:bg-neutral-800 p-6 rounded-lg shadow-sm border"
-//             >
-//               <div className="flex justify-between mb-3">
-//                 <h3 className="font-semibold text-lg">{addr.full_name}</h3>
+                {/* ORDER HISTORY */}
+                <h3 className="font-semibold mb-3">Order History</h3>
 
-//                 {addr.is_default && (
-//                   <span className="text-xs bg-neutral-200 px-2 py-1 rounded">
-//                     Primary
-//                   </span>
-//                 )}
-//               </div>
+                {orderHistory[modalUser.id]?.length === 0 && (
+                  <p className="text-sm text-neutral-500">No orders yet</p>
+                )}
 
-//               <p>{addr.street_address}</p>
-//               <p>
-//                 {addr.city}, {addr.state} {addr.postal_code}
-//               </p>
-//               <p>{addr.country}</p>
+                <div className="space-y-3">
+                  {orderHistory[modalUser.id]?.map((order) => (
+                    <div
+                      key={order.id}
+                      className="border rounded-lg p-4 flex justify-between"
+                    >
+                      <div>
+                        <p className="font-medium">Order #{order.id}</p>
+                        <p className="text-xs text-neutral-500">{order.date}</p>
+                      </div>
 
-//               <div className="flex justify-between mt-4 pt-4 border-t">
-//                 {!addr.is_default ? (
-//                   <button
-//                     onClick={() => handleSetPrimary(addr.id)}
-//                     className="text-sm border px-4 py-2 rounded"
-//                   >
-//                     Set as Primary
-//                   </button>
-//                 ) : (
-//                   <div />
-//                 )}
+                      <div className="text-right">
+                        <p className="font-semibold">
+                          ₦{Number(order.total || 0).toLocaleString()}
+                        </p>
+                        <span className="text-xs text-green-600">
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        {showModal && selectedUser && (
+          <div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            onClick={() => setShowModal(false)} // 🔥 click outside closes
+          >
+            <div
+              className="bg-white w-[500px] max-h-[80vh] overflow-y-auto rounded-xl p-6 relative"
+              onClick={(e) => e.stopPropagation()} // 🔥 prevent inside click closing
+            >
+              {/* HEADER */}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold">Full Order History</h2>
 
-//                 <div className="flex gap-3">
-//                   <button onClick={() => handleEdit(addr)}>
-//                     <Edit size={18} />
-//                   </button>
+                {/* ❌ CLOSE BUTTON */}
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-2xl font-bold hover:text-red-500"
+                >
+                  ×
+                </button>
+              </div>
 
-//                   <button onClick={() => handleDelete(addr.id)}>
-//                     <Trash2 size={18} />
-//                   </button>
-//                 </div>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </main>
+              {/* ORDERS */}
+              {orderHistory[selectedUser.id]?.length === 0 ? (
+                <p className="text-gray-500">No orders yet</p>
+              ) : (
+                orderHistory[selectedUser.id]?.map((order) => (
+                  <div
+                    key={order.id}
+                    className="border-b py-3 flex justify-between"
+                  >
+                    <div>
+                      <p className="font-medium">Order {order.id}</p>
+                      <p className="text-xs text-gray-500">{order.date}</p>
+                    </div>
 
-//       {/* ================= MODAL ================= */}
-
-//       {isDialogOpen && (
-//         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-//           <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg w-full max-w-lg">
-//             <div className="flex justify-between mb-4">
-//               <h2 className="text-xl font-semibold">
-//                 {editingAddress ? "Edit Address" : "Add Address"}
-//               </h2>
-
-//               <button onClick={() => setIsDialogOpen(false)}>
-//                 <X />
-//               </button>
-//             </div>
-
-//             <div className="space-y-3">
-//               <input
-//                 placeholder="Full Name"
-//                 value={form.full_name}
-//                 onChange={(e) =>
-//                   setForm({ ...form, full_name: e.target.value })
-//                 }
-//                 className="w-full border px-3 py-2 rounded"
-//               />
-
-//               <input
-//                 placeholder="Phone"
-//                 value={form.phone}
-//                 onChange={(e) =>
-//                   setForm({ ...form, phone: e.target.value })
-//                 }
-//                 className="w-full border px-3 py-2 rounded"
-//               />
-
-//               <input
-//                 placeholder="Street Address"
-//                 value={form.street_address}
-//                 onChange={(e) =>
-//                   setForm({ ...form, street_address: e.target.value })
-//                 }
-//                 className="w-full border px-3 py-2 rounded"
-//               />
-
-//               <input
-//                 placeholder="City"
-//                 value={form.city}
-//                 onChange={(e) =>
-//                   setForm({ ...form, city: e.target.value })
-//                 }
-//                 className="w-full border px-3 py-2 rounded"
-//               />
-
-//               <input
-//                 placeholder="State"
-//                 value={form.state}
-//                 onChange={(e) =>
-//                   setForm({ ...form, state: e.target.value })
-//                 }
-//                 className="w-full border px-3 py-2 rounded"
-//               />
-
-//               <input
-//                 placeholder="Postal Code"
-//                 value={form.postal_code}
-//                 onChange={(e) =>
-//                   setForm({ ...form, postal_code: e.target.value })
-//                 }
-//                 className="w-full border px-3 py-2 rounded"
-//               />
-
-//               <input
-//                 placeholder="Country"
-//                 value={form.country}
-//                 onChange={(e) =>
-//                   setForm({ ...form, country: e.target.value })
-//                 }
-//                 className="w-full border px-3 py-2 rounded"
-//               />
-//             </div>
-
-//             <div className="flex justify-end gap-3 mt-6">
-//               <button
-//                 onClick={() => setIsDialogOpen(false)}
-//                 className="border px-4 py-2 rounded"
-//               >
-//                 Cancel
-//               </button>
-
-//               <button
-//                 onClick={handleSubmit}
-//                 className="bg-black text-white dark:bg-white dark:text-black px-4 py-2 rounded"
-//               >
-//                 Save
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
+                    <div className="text-right">
+                      <p className="font-medium">
+                        ${Number(order.total || 0).toFixed(2)}
+                      </p>
+                      <span className="text-xs text-gray-500">
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -43,19 +43,19 @@ export default function LoginPage() {
 
 
   return (
-      <div className="min-h-screen bg-neutral-100">
+      <div className="min-h-screen bg-background">
     <AuthHeader />
 
     {/* Push content below fixed header */}
     <div className="pt-28 px-4 pb-16">
-      <div className="max-w-md mx-auto w-full bg-white p-8 md:p-10 shadow-md rounded-2xl">
-        <h1 className="text-2xl font-bold text-center mb-6 tracking-tight">
+       <div className="max-w-md mx-auto w-full bg-white dark:bg-neutral-800 p-8 md:p-10 shadow-md rounded-2xl">
+         <h1 className="text-2xl font-bold text-center mb-6 tracking-tight text-neutral-900 dark:text-neutral-100">
           Admin Log In
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-neutral-900 mb-2">
+             <label className="block text-sm font-medium text-neutral-900 dark:text-neutral-200 mb-2">
               Email Address
             </label>
             <input
@@ -63,13 +63,13 @@ export default function LoginPage() {
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-neutral-300 rounded-lg placeholder-neutral-400 focus:outline-none"
+              className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-700 rounded-lg placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-900 mb-2">
+            <label className="block text-sm font-medium text-neutral-900 dark:text-neutral-200 mb-2">
               Password
             </label>
             <div className="relative">
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-neutral-300 rounded-lg placeholder-neutral-400 focus:outline-none"
+                className="w-full px-4 py-3 border border-neutral-300 dark:border-neutral-700 rounded-lg placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100"
                 required
               />
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
             isLoading={isLogginIn}
             loadingText="Logging in..."
             onClick={handleSubmit}
-            className="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-black/80 transition"
+            className="w-full bg-black dark:bg-white dark:text-black text-white font-semibold py-3 rounded-lg hover:bg-black/80 dark:hover:bg-white/90 transition"
           >
             Login
           </Button>

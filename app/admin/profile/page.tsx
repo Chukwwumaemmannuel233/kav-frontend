@@ -45,44 +45,49 @@ export default function AdminProfilePage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-white">
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <div className="flex flex-col items-center">
+ return (
+  <div className="min-h-screen bg-white dark:bg-neutral-950 text-black dark:text-white">
+    <main className="max-w-4xl mx-auto px-6 py-16">
+      <div className="flex flex-col items-center">
 
-          {/* PROFILE IMAGE */}
-          <div className="w-40 h-40 rounded-full overflow-hidden mb-8 border">
-            <img
-              src={admin?.image}
-              alt="Admin profile"
-              className="w-full h-full object-cover"
-            />
-          </div>
+        {/* PROFILE IMAGE */}
+        <div className="w-40 h-40 rounded-full overflow-hidden mb-8 border border-neutral-200 dark:border-neutral-700">
+          <img
+            src={admin?.image}
+            alt="Admin profile"
+            className="w-full h-full object-cover"
+          />
+        </div>
 
-          {/* NAME */}
-          <h1 className="text-4xl font-bold mb-3">{admin?.name}</h1>
+        {/* NAME */}
+        <h1 className="text-4xl font-bold mb-3 text-black dark:text-white">
+          {admin?.name}
+        </h1>
 
-          {/* EMAIL */}
-          <p className="text-neutral-600 mb-4">{admin?.email}</p>
+        {/* EMAIL */}
+        <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+          {admin?.email}
+        </p>
 
-          {/* ROLE (static, since your backend doesn’t return role except in query) */}
-          <div className="bg-neutral-200 px-4 py-1.5 rounded-full text-sm font-medium mb-12">
-            Admin
-          </div>
+        {/* ROLE */}
+        <div className="bg-neutral-200 dark:bg-neutral-800 text-black dark:text-white px-4 py-1.5 rounded-full text-sm font-medium mb-12">
+          Admin
+        </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
-             <Link href="/admin/settings">
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Link href="/admin/settings">
             <Button
               isLoading={isEditing}
               loadingText="Loading..."
-              className="bg-black text-white px-8 py-3 font-medium hover:bg-neutral-900 transition"
+              className="bg-black dark:bg-white text-white dark:text-black px-8 py-3 font-medium hover:bg-neutral-900 dark:hover:bg-neutral-200 transition"
             >
               Edit Profile
             </Button>
-            </Link>
-            </div>
+          </Link>
         </div>
-      </main>
-    </div>
-  );
+
+      </div>
+    </main>
+  </div>
+);
 }

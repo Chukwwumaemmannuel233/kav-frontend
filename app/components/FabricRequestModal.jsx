@@ -35,27 +35,25 @@ export default function FabricRequestModal({ isOpen, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-   
-  if (!name.trim()) {
-    toast.error("Please enter your name");
-    return;
-  }
+    if (!name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
 
-  if (!phone || phone.length < 7) {
-    toast.error("Enter valid WhatsApp number");
-    return;
-  }
+    if (!phone || phone.length < 7) {
+      toast.error("Enter valid WhatsApp number");
+      return;
+    }
 
-  if (!description.trim()) {
-    toast.error("Please describe the fabric you want");
-    return;
-  }
+    if (!description.trim()) {
+      toast.error("Please describe the fabric you want");
+      return;
+    }
 
-  if (!file) {
-    toast.error("Please upload fabric image or video");
-    return;
-  }
-
+    if (!file) {
+      toast.error("Please upload fabric image or video");
+      return;
+    }
 
     setLoading(true);
 
@@ -124,10 +122,12 @@ export default function FabricRequestModal({ isOpen, onClose }) {
 
           {/* PHONE */}
           <div>
-            <label className="text-sm font-medium">WhatsApp Number *</label>
+            <label className="text-sm font-medium text-black dark:text-white">
+              WhatsApp Number *
+            </label>
 
             <PhoneInput
-              country={"ng"} // default Nigeria
+              country={"ng"}
               value={phone}
               onChange={(value) => setPhone(value)}
               enableSearch={true}
@@ -138,10 +138,29 @@ export default function FabricRequestModal({ isOpen, onClose }) {
                 fontSize: "16px",
                 borderRadius: "8px",
                 border: "1px solid #e5e7eb",
+                backgroundColor:
+                  typeof window !== "undefined" &&
+                  document.documentElement.classList.contains("dark")
+                    ? "#262626" // neutral-800
+                    : "#ffffff",
+                color:
+                  typeof window !== "undefined" &&
+                  document.documentElement.classList.contains("dark")
+                    ? "#ffffff"
+                    : "#000000",
               }}
               buttonStyle={{
                 border: "1px solid #e5e7eb",
                 borderRadius: "8px 0 0 8px",
+                backgroundColor:
+                  typeof window !== "undefined" &&
+                  document.documentElement.classList.contains("dark")
+                    ? "#262626"
+                    : "#ffffff",
+              }}
+              dropdownStyle={{
+                backgroundColor: "#171717", // dark dropdown
+                color: "#fff",
               }}
             />
           </div>

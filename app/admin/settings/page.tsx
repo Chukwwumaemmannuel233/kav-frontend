@@ -145,121 +145,131 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+  <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-black dark:text-white">
 
-      <div className="px-4 md:px-8 py-6 pb-24">
-        <div className="max-w-7xl mx-auto">
+    <div className="px-4 md:px-8 py-6 pb-24">
+      <div className="max-w-7xl mx-auto">
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">Admin Settings</h1>
-            <p className="text-neutral-600">
-              Manage your profile and password
-            </p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-black dark:text-white">
+            Admin Settings
+          </h1>
+          <p className="text-neutral-600 dark:text-neutral-400">
+            Manage your profile and password
+          </p>
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            {/* ================= PROFILE ================= */}
-            <div className="bg-white rounded-xl border p-6">
-              <h2 className="text-xl font-bold mb-6">Admin Profile</h2>
+          {/* ================= PROFILE ================= */}
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-6">
+            <h2 className="text-xl font-bold mb-6 text-black dark:text-white">
+              Admin Profile
+            </h2>
 
-              <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
 
-                {/* IMAGE */}
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-neutral-200">
-                    <img
-                      src={profilePhoto}
-                      className="w-full h-full object-cover"
+              {/* IMAGE */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700">
+                  <img
+                    src={profilePhoto}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <label className="bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white px-4 py-2 rounded-lg cursor-pointer">
+                    Change Photo
+                    <input
+                      type="file"
+                      onChange={handleProfilePhotoUpload}
+                      accept="image/*"
+                      className="hidden"
                     />
-                  </div>
+                  </label>
 
-                  <div className="flex gap-3">
-                    <label className="bg-neutral-200 px-4 py-2 rounded-lg cursor-pointer">
-                      Change Photo
-                      <input
-                        type="file"
-                        onChange={handleProfilePhotoUpload}
-                        accept="image/*"
-                        className="hidden"
-                      />
-                    </label>
-
-                    <button
-                      type="button"
-                      onClick={handleRemoveProfilePhoto}
-                      className="text-red-500"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveProfilePhoto}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    Remove
+                  </button>
                 </div>
+              </div>
 
-                {/* NAME */}
-                <div>
-                  <label className="text-sm">Admin Name</label>
-                  <input
-                    value={adminName}
-                    onChange={(e) => setAdminName(e.target.value)}
-                    className="w-full border px-4 py-2 rounded-lg"
-                  />
-                </div>
-
-                {/* EMAIL */}
-                <div>
-                  <label className="text-sm">Email</label>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full border px-4 py-2 rounded-lg"
-                  />
-                </div>
-
-                <button className="bg-orange-600 text-white px-6 py-2 rounded-lg">
-                  Update Profile
-                </button>
-              </form>
-            </div>
-
-            {/* ================= PASSWORD ================= */}
-            <div className="bg-white rounded-xl border p-6">
-              <h2 className="text-xl font-bold mb-6">Change Password</h2>
-
-              <form onSubmit={handleChangePassword} className="space-y-4">
-
+              {/* NAME */}
+              <div>
+                <label className="text-sm text-neutral-700 dark:text-neutral-300">
+                  Admin Name
+                </label>
                 <input
-                  type="password"
-                  placeholder="Current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full border px-4 py-2 rounded-lg"
+                  value={adminName}
+                  onChange={(e) => setAdminName(e.target.value)}
+                  className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white px-4 py-2 rounded-lg"
                 />
+              </div>
 
+              {/* EMAIL */}
+              <div>
+                <label className="text-sm text-neutral-700 dark:text-neutral-300">
+                  Email
+                </label>
                 <input
-                  type="password"
-                  placeholder="New password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full border px-4 py-2 rounded-lg"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white px-4 py-2 rounded-lg"
                 />
+              </div>
 
-                <input
-                  type="password"
-                  placeholder="Confirm new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full border px-4 py-2 rounded-lg"
-                />
-
-                <button className="bg-orange-600 text-white px-6 py-2 rounded-lg">
-                  Change Password
-                </button>
-              </form>
-            </div>
-
+              <button className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition">
+                Update Profile
+              </button>
+            </form>
           </div>
+
+          {/* ================= PASSWORD ================= */}
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-6">
+            <h2 className="text-xl font-bold mb-6 text-black dark:text-white">
+              Change Password
+            </h2>
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+
+              <input
+                type="password"
+                placeholder="Current password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500 px-4 py-2 rounded-lg"
+              />
+
+              <input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500 px-4 py-2 rounded-lg"
+              />
+
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500 px-4 py-2 rounded-lg"
+              />
+
+              <button className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition">
+                Change Password
+              </button>
+            </form>
+          </div>
+
         </div>
       </div>
     </div>
-  )
+  </div>
+);
 }
