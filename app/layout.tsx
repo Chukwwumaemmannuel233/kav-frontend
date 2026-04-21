@@ -18,6 +18,10 @@ export const metadata: Metadata = {
     "Experience the finest fabrics, sustainably sourced and crafted with artisanal quality for modern living.",
   generator: "v0.app",
   icons: {
+    // icon: [
+    //   { url: "/images/logo-light.png", media: "(prefers-color-scheme: light)" },
+    //   { url: "/images/logo-dark.png", media: "(prefers-color-scheme: dark)" },
+    // ],
     icon: "/images/logo1.png",
     apple: "/apple-icon.png",
   },
@@ -30,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body suppressHydrationWarning  className={`font-sans antialiased`}>
         <LoadingProvider>
           <CartProvider>
             {/* <InitialLoadingScreen /> */}

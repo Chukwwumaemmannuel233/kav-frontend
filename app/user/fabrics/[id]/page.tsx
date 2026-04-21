@@ -93,7 +93,7 @@ export default function ProductPage() {
     }
   };
 
-  const isOutOfStock = !selectedVariant || selectedVariant.stock_quantity <= 0;
+  const isOutOfStock = !selectedVariant || product.stock_quantity <= 2;
 
   if (loading)
     return (
@@ -206,7 +206,11 @@ export default function ProductPage() {
                 </button>
                 <span className="w-12 text-center">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() =>
+                    setQuantity((prev) =>
+                     Math.min(prev + 1, product?.stock_quantity || 1)
+                    )
+                  }
                   className="w-10 h-10 border rounded"
                 >
                   +
@@ -221,7 +225,13 @@ export default function ProductPage() {
               className="w-full py-4 rounded-full bg-black text-white hover:bg-neutral-800 
              dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-colors"
             >
-              {isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}
+              {!selectedVariant
+                ? "SELECT OPTION"
+                : product.stock_quantity <= 0
+                  ? "OUT OF STOCK"
+                  : product.stock_quantity <= 2
+                    ? "LOW STOCK"
+                    : "ADD TO CART"}
             </Button>
           </div>
         </div>

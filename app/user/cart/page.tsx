@@ -98,7 +98,14 @@ export default function CartPage() {
               onClick={shop}
               isLoading={isBack}
               loadingText="Loading..."
-              className="bg-black text-white px-8 py-3 font-medium"
+              className="
+                  px-8 py-3 font-medium rounded-lg transition
+                  bg-black text-white 
+                  hover:bg-black/80
+
+                  dark:bg-white dark:text-black
+                  dark:hover:bg-white/90
+  "
             >
               Continue Shopping
             </Button>

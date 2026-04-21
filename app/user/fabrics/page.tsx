@@ -13,6 +13,7 @@ interface Product {
   id: string;
   name: string;
   yard_price: number;
+  stock_quantity: number;
   image_url: string;
   isFavorited?: boolean;
 }
@@ -169,7 +170,12 @@ export default function FabricsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="relative group">
+              <div
+                key={product.id}
+                className={`relative group ${
+                  product.stock_quantity <= 0 ? "cursor-not-allowed" : ""
+                }`}
+              >
                 <button
                   onClick={() =>
                     toggleFavorite(product.id, product.isFavorited || false)
@@ -187,12 +193,37 @@ export default function FabricsPage() {
                   />
                 </button>
 
-                <Link href={`/user/fabrics/${product.id}`}>
+                <Link
+                  href={
+                    product.stock_quantity <= 0
+                      ? "#"
+                      : `/user/fabrics/${product.id}`
+                  }
+                >
                   <div className="relative bg-neutral-100 rounded-lg aspect-square overflow-hidden mb-3 cursor-pointer">
+                    {/* 🔴 OUT OF STOCK OVERLAY */}
+                    {product.stock_quantity <= 0 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                        <span className="text-white font-bold text-sm tracking-wide">
+                          OUT OF STOCK
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 🟡 LOW STOCK BADGE */}
+                    {product.stock_quantity > 0 &&
+                      product.stock_quantity <= 3 && (
+                        <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded z-10">
+                          LOW STOCK
+                        </div>
+                      )}
+
                     <img
                       src={product.image_url || "/placeholder.svg"}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${
+                        product.stock_quantity <= 0 ? "opacity-50" : ""
+                      }`}
                     />
                   </div>
                 </Link>

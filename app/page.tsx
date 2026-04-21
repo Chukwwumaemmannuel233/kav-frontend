@@ -1,11 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "./components/ui/button";
 import API from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+
+const slides = [
+  {
+    title: "Discover Timeless Luxury",
+    text: "Curated fashion, modern silhouettes, and premium craftsmanship.",
+    image: "/images/raw-denim-fabric.jpg",
+  },
+  {
+    title: "Elegance Redefined",
+    text: "Experience fashion that blends tradition with modern design.",
+    image: "/images/natural-linen-blend-fabric.jpg",
+  },
+  {
+    title: "Crafted for You",
+    text: "Premium materials tailored for comfort and style.",
+    image: "/images/tencel-twill-fabric.jpg",
+  },
+  {
+    title: "Style Meets Identity",
+    text: "Express yourself through bold and timeless fashion.",
+    image: "/images/belgian-linen-fabric.jpg",
+  },
+  {
+    title: "Luxury That Lasts",
+    text: "Designed to stand the test of time.",
+    image: "/images/charcoal-wool-felt-fabric.jpg",
+  },
+];
 
 export default function LandingPage() {
   const router = useRouter();
@@ -13,12 +43,64 @@ export default function LandingPage() {
   const [recommended, setRecommended] = useState<any[]>([]);
   const [journalPosts, setJournalPosts] = useState<any[]>([]);
   const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
+  const [index, setIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
 
   useEffect(() => {
     fetchNewArrivals();
     fetchRecommended();
     fetchJournalPosts();
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % slides.length);
+    }, 5000); // change every 5s
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const scroll = (direction: "left" | "right") => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const scrollAmount = 250;
+
+    container.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const handleFindFabric = async () => {
+    if (!image) {
+      toast.error("Upload a fabric image first");
+      return;
+    }
+
+    // 🔥 TEMP LOGIC (replace with API later)
+    const hasMatch = Math.random() > 0.5;
+
+    if (!hasMatch) {
+      toast.error("No matching fabric found");
+      setShowModal(true);
+    } else {
+      toast.success("Matching fabrics found");
+    }
+  };
 
   const fetchJournalPosts = async () => {
     try {
@@ -90,7 +172,7 @@ export default function LandingPage() {
 
           <Button
             onClick={() => router.push("/auth/login")}
-           className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
+            className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
           >
             Login
           </Button>
@@ -98,23 +180,46 @@ export default function LandingPage() {
       </header>
 
       {/* HERO */}
-      <section className="max-w-7xl mx-auto px-6 pt-16 pb-10 text-center md:text-left">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">
-          Discover Timeless Luxury
-        </h1>
-        <p className="text-lg max-w-xl mx-auto md:mx-0">
-          Curated fashion, modern silhouettes, and premium craftsmanship
-          designed for the modern wardrobe.
-        </p>
-
-        <div className="mt-6 flex justify-center md:justify-start gap-4">
-          <Button
-            onClick={() => router.push("/auth/login")}
-            className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
+      <section className="relative h-[80vh] overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ x: 200, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -200, opacity: 0 }}
+            transition={{ duration: 0.7 }}
+            className="absolute inset-0"
           >
-            Explore Profile
-          </Button>
-        </div>
+            {/* Background Image */}
+            <img
+              src={slides[index].image}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-black/40" />
+
+            {/* Content */}
+            <div className="relative z-10 max-w-7xl mx-auto h-full flex items-center px-6">
+              <div className="max-w-xl text-left">
+                <h2 className="text-3xl md:text-3xl font-bold tracking-tight mb-4">
+                  {slides[index].title}
+                </h2>
+
+                <p className="text-lg mb-6 text-neutral-700 dark:text-neutral-300">
+                  {slides[index].text}
+                </p>
+
+                <button
+                  onClick={() => router.push("/auth/login")}
+                  className="bg-neutral-900 text-white px-6 py-2 rounded-lg hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black"
+                >
+                  Explore Profile
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </section>
 
       {/* NEW ARRIVALS */}
@@ -161,37 +266,166 @@ export default function LandingPage() {
       </section>
 
       {/* FULL WIDTH BANNER */}
-      <section className="relative h-[420px] w-full overflow-hidden">
-        <Image
-          src="/images/blush-silk-dupioni-fabric.jpg"
-          alt="collection"
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center px-6">
-          <h2 className="text-white text-4xl md:text-6xl font-light mb-4">
-            The Sculpture Series
+      <section className="max-w-7xl mx-auto px-6 py-20 md:py-24 grid md:grid-cols-2 gap-12 items-center">
+        {/* LEFT SIDE */}
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="space-y-6"
+        >
+          <span className="text-sm uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+            Smart Tool
+          </span>
+
+          <h2 className="text-3xl md:text-5xl font-semibold text-neutral-900 dark:text-white">
+            Fabric Finder
           </h2>
-          <p className="text-white/90 max-w-xl mb-6">
-            Architectural lines meet fluid textures in our most ambitious
-            collection yet.
+
+          <p className="text-neutral-600 dark:text-neutral-300 max-w-md">
+            Upload a fabric image and we’ll help you find the closest match
+            instantly.
           </p>
-          <Link
-            href="/auth/login"
-            className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-white/90 transition"
+
+          {/* UPLOAD */}
+          <div className="space-y-4 pt-4">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="w-full px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-transparent file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-neutral-900 file:text-white file:rounded-md"
+            />
+
+            <button
+              onClick={handleFindFabric}
+              className="w-full bg-neutral-900 text-white py-3 rounded-lg hover:bg-neutral-800 dark:bg-white dark:text-black transition"
+            >
+              Find Fabric
+            </button>
+          </div>
+        </motion.div>
+
+        {/* RIGHT SIDE */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          className="relative h-[320px] md:h-[380px] rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+        >
+          {preview ? (
+            <Image src={preview} alt="preview" fill className="object-cover" />
+          ) : (
+            <span className="text-neutral-500 text-sm">
+              Image preview will appear here
+            </span>
+          )}
+
+          {preview && (
+            <div className="absolute bottom-4 left-4 bg-white/80 dark:bg-black/60 px-4 py-2 rounded-lg text-sm">
+              Your Uploaded Fabric
+            </div>
+          )}
+        </motion.div>
+
+        {/* MODAL */}
+        {showModal && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setShowModal(false)} // click outside closes
           >
-            Shop Collection
-          </Link>
-        </div>
+            <form
+              onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+              onSubmit={(e) => {
+                e.preventDefault();
+
+                if (!name.trim() || !phone.trim()) {
+                  toast.error("Please fill all fields");
+                  return;
+                }
+
+                // success
+                toast.success("Request submitted successfully!");
+
+                setName("");
+                setPhone("");
+                setShowModal(false);
+              }}
+              className="bg-white dark:bg-neutral-900 p-6 rounded-xl w-full max-w-md space-y-4 relative"
+            >
+              {/* CLOSE BUTTON */}
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="absolute top-3 right-3 text-lg"
+              >
+                ✕
+              </button>
+
+              <h3 className="text-xl font-semibold">Didn’t find a match?</h3>
+
+              <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                Drop your details and we’ll help you source your perfect
+                textile.
+              </p>
+
+              {/* NAME */}
+              <input
+                type="text"
+                placeholder="Your Name"
+                className="w-full px-4 py-3 border rounded-lg"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              {/* PHONE */}
+              <input
+                type="tel"
+                placeholder="WhatsApp Number (e.g. 08012345678)"
+                className="w-full px-4 py-3 border rounded-lg"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+
+              {/* SUBMIT */}
+              <button
+                type="submit"
+                className="w-full bg-black text-white py-3 rounded-lg"
+              >
+                Submit Request
+              </button>
+            </form>
+          </div>
+        )}
       </section>
 
       {/* RECOMMENDED PRODUCTS */}
-      <section className="max-w-7xl mx-auto py-16">
+      <section className="max-w-7xl mx-auto py-16 relative">
         <div className="px-6 mb-8">
-          <h2 className="text-2xl font-bold">Recommended For You</h2>
+          <h2 className="text-2xl font-bold">Currently Selling</h2>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scrollbar-hide">
+        {/* LEFT ARROW */}
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-black/60 p-2 rounded-full shadow hover:scale-110 transition"
+        >
+          ←
+        </button>
+
+        {/* RIGHT ARROW */}
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-black/60 p-2 rounded-full shadow hover:scale-110 transition"
+        >
+          →
+        </button>
+
+        <div
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scrollbar-hide"
+        >
           {recommended.map((product) => (
             <Link key={product.id} href={`/auth/login`}>
               <div className="snap-start min-w-[220px] flex-shrink-0 transition-transform hover:scale-105">
