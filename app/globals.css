@@ -53,3 +53,41 @@ body {
   scrollbar-width: none;
 }
 
+.auth-input {
+  background: transparent;
+}
+
+.auth-input:focus,
+.auth-input:active {
+  background: transparent;
+}
+
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus,
+.auth-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #fbfaf7 inset;
+  -webkit-text-fill-color: #171412;
+  caret-color: #171412;
+  transition: background-color 9999s ease-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  .auth-input:-webkit-autofill,
+  .auth-input:-webkit-autofill:hover,
+  .auth-input:-webkit-autofill:focus,
+  .auth-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #0a0a0a inset;
+    -webkit-text-fill-color: #f5f5f5;
+    caret-color: #f5f5f5;
+  }
+}
+
+.dark .auth-input:-webkit-autofill,
+.dark .auth-input:-webkit-autofill:hover,
+.dark .auth-input:-webkit-autofill:focus,
+.dark .auth-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0a0a0a inset;
+  -webkit-text-fill-color: #f5f5f5;
+  caret-color: #f5f5f5;
+}

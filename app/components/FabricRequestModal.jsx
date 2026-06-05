@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import PhoneInput from "react-phone-input-2";
+import { Loader2, X } from "lucide-react";
 import "react-phone-input-2/lib/style.css";
 
 export default function FabricRequestModal({ isOpen, onClose }) {
@@ -10,30 +11,12 @@ export default function FabricRequestModal({ isOpen, onClose }) {
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  /* ===============================
-     1. HANDLE FILE SELECT + PREVIEW
-  =============================== */
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (!selected) return;
-
-    setFile(selected);
-
-    // preview
-    const url = URL.createObjectURL(selected);
-    setPreview(url);
-  };
-
-  /* ===============================
-     2. SUBMIT FORM
-  =============================== */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     if (!name.trim()) {
       toast.error("Please enter your name");
@@ -62,10 +45,7 @@ export default function FabricRequestModal({ isOpen, onClose }) {
       formData.append("name", name);
       formData.append("phone", phone);
       formData.append("description", description);
-
-      if (file) {
-        formData.append("file", file); // IMPORTANT
-      }
+      formData.append("file", file);
 
       const res = await fetch("http://localhost:5000/api/fabric-request", {
         method: "POST",
@@ -77,14 +57,11 @@ export default function FabricRequestModal({ isOpen, onClose }) {
       if (!res.ok) {
         toast.error(data.message || "Something went wrong");
       } else {
-        toast.success("Fabric request sent successfully 🎉");
-
-        // reset form
+        toast.success("Fabric request sent successfully");
         setName("");
         setPhone("");
         setDescription("");
         setFile(null);
-        setPreview(null);
         onClose();
       }
     } catch (err) {
@@ -94,130 +71,78 @@ export default function FabricRequestModal({ isOpen, onClose }) {
     }
   };
 
-  /* ===============================
-     3. MODAL UI
-  =============================== */
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background w-[95%] max-w-md rounded-xl p-6 relative">
-        {/* CLOSE BUTTON */}
-        <button onClick={onClose} className="absolute right-4 top-3 text-xl">
-          ✕
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={onClose}>
+      <form
+        onClick={(event) => event.stopPropagation()}
+        onSubmit={handleSubmit}
+        className="relative w-full max-w-md rounded-2xl bg-white p-5 text-[#171412] shadow-2xl dark:bg-neutral-950 dark:text-white sm:p-6"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-2 transition hover:bg-black/5 dark:hover:bg-white/10"
+          aria-label="Close fabric finder form"
+        >
+          <X size={18} />
         </button>
 
-        <h2 className="text-2xl font-bold mb-4 text-center">Request Fabric</h2>
+        <h3 className="pr-10 text-2xl font-semibold">Fabric sourcing request</h3>
+        <p className="mt-3 text-sm leading-6 text-[#70665d] dark:text-neutral-400">
+          Send your sample and details. The team will help source the fabric or suggest the closest available option.
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* NAME */}
-          <div>
-            <label className="text-sm font-medium">Name</label>
-            <input
-              type="text"
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+        <div className="mt-6 space-y-3">
+          <input
+            type="text"
+            placeholder="Your name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[#171412] outline-none transition focus:border-[#9c653d] dark:border-white/10 dark:bg-neutral-900 dark:text-white"
+          />
 
-          {/* PHONE */}
-          <div>
-            <label className="text-sm font-medium text-black dark:text-white">
-              WhatsApp Number *
-            </label>
+          <PhoneInput
+            country="ng"
+            value={phone}
+            onChange={(value) => setPhone(value)}
+            enableSearch
+            countryCodeEditable={false}
+            inputClass="!w-full !h-12 !rounded-xl !border-black/10 !bg-white !text-sm !text-black focus:!border-[#9c653d] dark:!border-white/10 dark:!bg-neutral-900 dark:!text-white"
+            buttonClass="!rounded-l-xl !border-black/10 !bg-white dark:!border-white/10 dark:!bg-neutral-900"
+            dropdownClass="!bg-white !text-black dark:!bg-neutral-900 dark:!text-white"
+          />
 
-            <PhoneInput
-              country={"ng"}
-              value={phone}
-              onChange={(value) => setPhone(value)}
-              enableSearch={true}
-              countryCodeEditable={false}
-              inputStyle={{
-                width: "100%",
-                height: "45px",
-                fontSize: "16px",
-                borderRadius: "8px",
-                border: "1px solid #e5e7eb",
-                backgroundColor:
-                  typeof window !== "undefined" &&
-                  document.documentElement.classList.contains("dark")
-                    ? "#262626" // neutral-800
-                    : "#ffffff",
-                color:
-                  typeof window !== "undefined" &&
-                  document.documentElement.classList.contains("dark")
-                    ? "#ffffff"
-                    : "#000000",
-              }}
-              buttonStyle={{
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px 0 0 8px",
-                backgroundColor:
-                  typeof window !== "undefined" &&
-                  document.documentElement.classList.contains("dark")
-                    ? "#262626"
-                    : "#ffffff",
-              }}
-              dropdownStyle={{
-                backgroundColor: "#171717", // dark dropdown
-                color: "#fff",
-              }}
-            />
-          </div>
+          <textarea
+            placeholder="What fabric are you looking for? Color, texture, quantity, deadline, or where you saw it"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={4}
+            className="w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-3 text-[#171412] outline-none transition focus:border-[#9c653d] dark:border-white/10 dark:bg-neutral-900 dark:text-white"
+          />
 
-          {/* DESCRIPTION */}
-          <div>
-            <label className="text-sm font-medium">Fabric Description</label>
-            <textarea
-              placeholder="Describe fabric you want..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
-
-          {/* FILE UPLOAD */}
-          <div>
-            <label className="text-sm font-medium">Upload Image or Video</label>
-
+          <label className="block rounded-xl border border-dashed border-black/20 bg-black/[0.02] px-4 py-3 text-sm text-[#70665d] transition hover:border-[#9c653d] dark:border-white/15 dark:bg-white/5 dark:text-neutral-300">
+            <span className="font-semibold text-[#171412] dark:text-white">Upload fabric sample</span>
+            <span className="mt-1 block break-words text-xs">
+              {file ? file.name : "Image or video sample required"}
+            </span>
             <input
               type="file"
               accept="image/*,video/*"
-              onChange={handleFileChange}
-              className="w-full mt-1"
+              className="sr-only"
+              onChange={(event) => setFile(event.target.files?.[0] || null)}
             />
-          </div>
+          </label>
 
-          {/* PREVIEW */}
-          {preview && (
-            <div className="mt-3">
-              <p className="text-sm mb-1">Preview:</p>
-
-              {file?.type.startsWith("image") ? (
-                <img
-                  src={preview}
-                  alt="preview"
-                  className="w-full h-40 object-cover rounded-lg"
-                />
-              ) : (
-                <video
-                  src={preview}
-                  controls
-                  className="w-full h-40 rounded-lg"
-                />
-              )}
-            </div>
-          )}
-
-          {/* SUBMIT */}
           <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-black text-white py-3 rounded-lg mt-3"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#171412] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#2a241f] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
           >
-            {loading ? "Sending..." : "Send Request"}
+            {loading && <Loader2 className="animate-spin" size={17} />}
+            {loading ? "Submitting..." : "Submit Request"}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

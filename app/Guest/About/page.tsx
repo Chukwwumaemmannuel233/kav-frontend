@@ -1,143 +1,188 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import SiteHeader from "../../components/site-header";
+import { useRouter } from "next/navigation";
+import { ArrowRight, CheckCircle2, Menu, Sparkles, X } from "lucide-react";
 
-export default function OurStory() {
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/Guest/shop" },
+  { label: "About", href: "/Guest/About" },
+];
+
+const values = [
+  "Carefully selected fabrics",
+  "Reliable sourcing support",
+  "Quality before quantity",
+];
+
+const process = [
+  {
+    title: "Source",
+    text: "We look for fabrics with dependable texture, finish, and practical use.",
+  },
+  {
+    title: "Review",
+    text: "Each material is considered for feel, drape, weight, and design purpose.",
+  },
+  {
+    title: "Support",
+    text: "Customers can browse, request, and choose fabrics with clearer confidence.",
+  },
+];
+
+export default function GuestAboutPage() {
+  const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <main className="bg-white">
-      {/* Header */}
-      <SiteHeader />
-
-      {/* Hero Section */}
-      <section className="py-16 md:py-24 px-6 md:px-16 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 text-balance">
-          Woven with Purpose
-        </h1>
-        <p className="text-base md:text-lg text-neutral-700 max-w-3xl mx-auto leading-relaxed">
-          Discover the story behind our threads, a narrative of passion,
-          craftsmanship, and timeless quality that defines every piece we
-          create.
-        </p>
-      </section>
-
-      {/* Heritage Image */}
-      <section className="px-6 md:px-16 py-12 md:py-16 flex justify-center">
-        <div className="w-full max-w-5xl">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuABAUAXCnZUmpdjtQlpMEVYtqxz2nHtfcPKiUMoLDRThhQwz3X9YPdRd9fyQizWihK38tLeJg8VfYX0DRpynvA4fp8XYeqyaIFr43F-A0fsl8mNHesKI-bzcJ-iglHIXpJ2_vE2Uny_J6X2-ZfW3OPAyC6yXq-Ptz74HAsos6L2L7L0OMjf_KFHqdAw0H6m9vk6twwVl2QU4cW1W7CXglzRaRNXUcCdNFp3PZNN4CZ86Tfu5iRXZ0Z49P-VcJcELWoR0d-blaJsXxRy"
-            alt="Woven fabric texture"
-            className="w-full h-72 md:h-96 object-cover rounded-lg"
-          />
-        </div>
-      </section>
-
-      {/* Our Heritage Section */}
-      <section className="py-16 md:py-24 px-6 md:px-16 max-w-5xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-bold mb-8">Our Heritage</h2>
-        <div className="space-y-6 text-neutral-700 leading-relaxed">
-          <p className="text-base md:text-lg">
-            Our journey began with a simple belief: that the fabrics we choose
-            to live with should be as beautiful and enduring as the stories they
-            help create. Founded by artisans with a shared passion for
-            traditional techniques and modern design, our brand was born from a
-            desire to bring exceptional textiles to discerning creators and
-            homeowners.
-          </p>
-          <p className="text-base md:text-lg">
-            Each thread carries a legacy of generations, a commitment to quality
-            that transcends trends. We started in a small workshop, surrounded
-            by the hum of looms and the scent of natural dyes, with a vision to
-            honor the past while weaving the future.
-          </p>
-        </div>
-      </section>
-
-      {/* Heritage Images Grid */}
-      <section className="px-6 md:px-16 py-12 md:py-16 flex justify-center">
-        <div className="w-full max-w-5xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdDy89xG5pA6YpACLJzGGaT4gDTvpj7vPVHetu65olrc9f3eQ_8YDiGaouTDV3Ly-LuOHDldWTMmwt5w_sjIC4UpcuGww2MCfAfjmyD9d-k3hjLFxOamPrqn71gEMfQtaXRznPsU0ETIpNGnm6tRaqoEMcDneJ__yn0ByDXQ_6Gx-Ll_1jUsrgTMjcmVGvH284XNU8NhafG9LvQJ3lSjxYL_a4lh6USKt7cL9tOc7BCFm5RWe2vYDztCnRofS2dOPeYEUC70CXHIL8"
-              alt="Textile loom in workshop"
-              className="w-full h-72 md:h-80 object-cover rounded-lg"
+    <main className="min-h-screen bg-[#fbfaf7] text-[#171412] transition-colors dark:bg-neutral-950 dark:text-neutral-100">
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-[#fbfaf7]/92 backdrop-blur-xl dark:border-white/10 dark:bg-neutral-950/92">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/logo1.png"
+              alt="KAV Textile"
+              width={180}
+              height={44}
+              className="h-8 w-auto object-contain dark:brightness-0 dark:invert sm:h-9"
+              priority
             />
-            <img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRkqGqJ1yKERZx3XInuVZx16BQ8nqd_01XkyNiP8MbGQGHplhRnM5843NUURHigiwd4GeXaKVrZ2hhoJvkeaNxJ1_AWuFEg49OEKgkmZtvRqoqux8YGOnozRf2NW7zdzhM3ucU0DNevM1P2HZl-DdDJ16qksEcF_ySMzgW62DeZ_08A5fi4z2_jzO-AmvAwOYhnymh2M_AK7Mc_oo_Wr14adZSP1yKqZkw6WbgB_RxyLryvrqvRWHqo-jkDJwiqMg-Q_y51LQE2kVQ"
-              alt="Hands dyeing fabric naturally"
-              className="w-full h-72 md:h-80 object-cover rounded-lg"
-            />
+          </Link>
+
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#514942] dark:text-neutral-300 md:flex">
+            {navLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="transition hover:text-[#171412] dark:hover:text-white">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push("/auth/login")}
+              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[#514942] transition hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10 sm:inline-flex"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => router.push("/auth/signup")}
+              className="hidden rounded-full bg-[#171412] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2a241f] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 sm:inline-flex"
+            >
+              Join Now
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/80 transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white dark:hover:text-neutral-950 md:hidden"
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X size={18} /> : <Menu size={19} />}
+            </button>
+          </div>
+        </div>
+
+        {menuOpen && (
+          <div className="border-t border-black/10 bg-[#fbfaf7]/98 px-4 py-4 shadow-xl shadow-black/5 dark:border-white/10 dark:bg-neutral-950/98 md:hidden">
+            <nav className="grid gap-2 text-sm font-semibold text-[#514942] dark:text-neutral-200">
+              {navLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-2xl border border-black/10 bg-white/75 px-4 py-3 transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-white/8 dark:hover:bg-white dark:hover:text-neutral-950"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button onClick={() => router.push("/auth/login")} className="rounded-full border border-black/10 px-4 py-3 text-sm font-bold dark:border-white/10">
+                Login
+              </button>
+              <button onClick={() => router.push("/auth/signup")} className="rounded-full bg-[#171412] px-4 py-3 text-sm font-bold text-white dark:bg-white dark:text-neutral-950">
+                Join Now
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div>
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#8e4f25] dark:border-white/10 dark:bg-white/8 dark:text-[#e4b989] sm:text-xs">
+            <Sparkles size={14} />
+            About KAV
+          </div>
+          <h1 className="text-4xl font-semibold leading-tight tracking-normal sm:text-6xl">
+            Fabrics chosen with care, purpose, and restraint.
+          </h1>
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-[#70665d] dark:text-neutral-400 sm:text-lg sm:leading-8">
+            KAV Textile helps creators find fabrics that feel good, look refined, and work beautifully for the pieces they want to make.
+          </p>
+          <div className="mt-8 grid gap-3 sm:max-w-xl">
+            {values.map((value) => (
+              <div key={value} className="flex items-center gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 dark:border-white/10 dark:bg-neutral-900">
+                <CheckCircle2 size={18} className="text-[#8e4f25] dark:text-[#e4b989]" />
+                <span className="text-sm font-semibold">{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-[0.9fr_1.1fr] sm:gap-4">
+          <div className="relative min-h-[280px] overflow-hidden rounded-3xl sm:min-h-[460px]">
+            <Image src="/images/fabric-weaving-process-hands.jpg" alt="Hands working with fabric" fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" priority />
+          </div>
+          <div className="grid gap-3 sm:gap-4">
+            <div className="relative min-h-[190px] overflow-hidden rounded-3xl sm:min-h-[220px]">
+              <Image src="/images/thread-and-yarn-shelves.jpg" alt="Thread and yarn shelves" fill sizes="(min-width: 1024px) 30vw, 100vw" className="object-cover" />
+            </div>
+            <div className="relative min-h-[190px] overflow-hidden rounded-3xl sm:min-h-[220px]">
+              <Image src="/images/fabric-draping-form-art.jpg" alt="Fabric draping form" fill sizes="(min-width: 1024px) 30vw, 100vw" className="object-cover" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* The Craftsmanship Section */}
-      <section className="py-16 md:py-24 px-6 md:px-16 max-w-5xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-bold mb-8">
-          The Craftsmanship
-        </h2>
-        <p className="text-base md:text-lg text-neutral-700 leading-relaxed">
-          We believe in the power of the human touch. Our fabrics are the result
-          of countless hours of meticulous work, from sourcing the finest
-          natural fibers to the final inspection of every yard. We partner with
-          small, family-run mills that share our dedication to ethical practices
-          and unparalleled quality. This synergy of traditional methods and
-          contemporary design results in textiles that are not just materials,
-          but works of art.
-        </p>
-      </section>
-
-      {/* Our Vision Section */}
-      <section className="py-16 md:py-24 px-6 md:px-16 max-w-5xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-bold mb-8">Our Vision</h2>
-        <p className="text-base md:text-lg text-neutral-700 leading-relaxed">
-          Looking ahead, our vision is to continue championing the art of
-          textile making. We are committed to sustainability, exploring
-          innovative, eco-friendly materials and processes that protect our
-          planet. We aim to inspire a community of creators who value
-          authenticity and quality, providing them with fabrics that empower
-          their creative expression. Our story is ever-evolving, woven into
-          every new design we introduce.
-        </p>
-      </section>
-
-      {/* CTA Button */}
-      <section className="py-16 md:py-24 px-6 md:px-16 flex justify-center">
-        <Link href="/shop">
-          <button className="bg-black text-white px-8 py-4 font-medium hover:bg-neutral-900 transition text-base md:text-lg">
-            Explore Our Fabrics
-          </button>
-        </Link>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-neutral-200 py-12 px-6 md:px-16">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-center text-sm text-neutral-600 mb-8">
-            © 2025 FABRIC. All rights reserved.
-          </p>
-          <div className="flex justify-center gap-8">
-            <a
-              href="#"
-              className="text-sm text-neutral-600 hover:text-neutral-900 transition"
-            >
-              Instagram
-            </a>
-            <a
-              href="#"
-              className="text-sm text-neutral-600 hover:text-neutral-900 transition"
-            >
-              Pinterest
-            </a>
-            <a
-              href="#"
-              className="text-sm text-neutral-600 hover:text-neutral-900 transition"
-            >
-              Twitter
-            </a>
+      <section className="border-y border-black/10 bg-white py-12 dark:border-white/10 dark:bg-neutral-900 sm:py-16">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#8e4f25] dark:text-[#e4b989]">Our approach</p>
+            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">Simple, practical, and quality-led.</h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {process.map((item) => (
+              <article key={item.title} className="rounded-3xl border border-black/10 bg-[#fbfaf7] p-5 dark:border-white/10 dark:bg-neutral-950">
+                <h3 className="font-semibold">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-[#70665d] dark:text-neutral-400">{item.text}</p>
+              </article>
+            ))}
           </div>
         </div>
-      </footer>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:items-center">
+        <div className="relative min-h-[320px] overflow-hidden rounded-3xl sm:min-h-[460px]">
+          <Image src="/images/designer-woman-working.jpg" alt="Designer working with fabric" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+        </div>
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#8e4f25] dark:text-[#e4b989]">What we care about</p>
+          <h2 className="mt-3 text-3xl font-semibold leading-tight sm:text-4xl">Better fabric choices make better finished work.</h2>
+          <p className="mt-5 text-sm leading-7 text-[#70665d] dark:text-neutral-400 sm:text-base sm:leading-8">
+            We focus on fabrics that are useful, beautiful, and easy to understand. The goal is not to overwhelm customers with noise, but to make each option feel clear enough to choose.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/Guest/shop" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#171412] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#2a241f] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200">
+              View Fabrics
+              <ArrowRight size={17} />
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

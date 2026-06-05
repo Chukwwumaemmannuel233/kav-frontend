@@ -1,55 +1,180 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "./components/ui/button";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  Ruler,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+  X,
+} from "lucide-react";
 import API from "@/lib/api";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
-const slides = [
+type Product = {
+  id: string | number;
+  name: string;
+  price?: number | string;
+  yard_price?: number | string;
+  image_url?: string;
+  category?: string;
+};
+
+type JournalPost = {
+  id: string | number;
+  title: string;
+  excerpt?: string;
+  category?: string;
+  image?: string;
+};
+
+const heroSlides = [
   {
-    title: "Discover Timeless Luxury",
-    text: "Curated fashion, modern silhouettes, and premium craftsmanship.",
-    image: "/images/raw-denim-fabric.jpg",
+    title: "Premium fabrics for intentional design.",
+    text: "Source refined textiles, dependable yardage, and custom support for fashion, interiors, and special projects.",
+    image: "/images/luxury-fabric-textile-close-up-neutral-beige-woven.jpg",
   },
   {
-    title: "Elegance Redefined",
-    text: "Experience fashion that blends tradition with modern design.",
-    image: "/images/natural-linen-blend-fabric.jpg",
+    title: "Textures that make every piece feel considered.",
+    text: "From linen blends to silk charmeuse, discover materials selected for drape, finish, and everyday elegance.",
+    image: "/images/fabric-weaving-texture.jpg",
   },
   {
-    title: "Crafted for You",
-    text: "Premium materials tailored for comfort and style.",
-    image: "/images/tencel-twill-fabric.jpg",
-  },
-  {
-    title: "Style Meets Identity",
-    text: "Express yourself through bold and timeless fashion.",
-    image: "/images/belgian-linen-fabric.jpg",
-  },
-  {
-    title: "Luxury That Lasts",
-    text: "Designed to stand the test of time.",
-    image: "/images/charcoal-wool-felt-fabric.jpg",
+    title: "Find the fabric, match the mood, start the work.",
+    text: "Explore new arrivals, request hard-to-find textiles, and build your next collection with confidence.",
+    image: "/images/fabric-draping-form-art.jpg",
   },
 ];
 
+const curatedProducts: Product[] = [
+  {
+    id: "curated-linen",
+    name: "Belgian Linen",
+    price: 18500,
+    yard_price: 18500,
+    category: "Linen",
+    image_url: "/images/belgian-linen-fabric.jpg",
+  },
+  {
+    id: "curated-silk",
+    name: "Ivory Silk Charmeuse",
+    price: 32000,
+    yard_price: 32000,
+    category: "Silk",
+    image_url: "/images/ivory-silk-charmeuse-fabric.jpg",
+  },
+  {
+    id: "curated-hemp",
+    name: "Olive Hemp Canvas",
+    price: 14500,
+    yard_price: 14500,
+    category: "Canvas",
+    image_url: "/images/olive-green-hemp-canvas-fabric.jpg",
+  },
+  {
+    id: "curated-wool",
+    name: "Heather Grey Wool Tweed",
+    price: 27000,
+    yard_price: 27000,
+    category: "Wool",
+    image_url: "/images/heather-grey-wool-tweed-fabric.jpg",
+  },
+  {
+    id: "curated-tencel",
+    name: "Tencel Twill",
+    price: 16500,
+    yard_price: 16500,
+    category: "Twill",
+    image_url: "/images/tencel-twill-fabric.jpg",
+  },
+  {
+    id: "curated-velvet",
+    name: "Deep Navy Velvet",
+    price: 24500,
+    yard_price: 24500,
+    category: "Velvet",
+    image_url: "/images/deep-navy-velvet-fabric.jpg",
+  },
+];
+
+const journalFallback: JournalPost[] = [
+  {
+    id: "journal-drape",
+    title: "How to choose fabric by drape, not just color",
+    excerpt: "A practical guide to matching textile movement with the garment or space you want to create.",
+    category: "Fabric Notes",
+    image: "/images/designer-woman-working.jpg",
+  },
+  {
+    id: "journal-natural",
+    title: "Why natural fibers still feel unmistakably premium",
+    excerpt: "Cotton, linen, silk, wool, and hemp each bring a different kind of structure and softness.",
+    category: "Material Guide",
+    image: "/images/natural-fibers-linen-cotton.jpg",
+  },
+];
+
+const trustItems = [
+  { icon: ShieldCheck, title: "Quality checked", text: "Curated textures, weight, and finish." },
+  { icon: Truck, title: "Reliable delivery", text: "Clear fulfillment for local orders." },
+  { icon: Ruler, title: "Sold by the yard", text: "Order only what your project needs." },
+];
+
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/Guest/shop" },
+  { label: "About", href: "/Guest/About" },
+];
+
+function formatPrice(value?: number | string) {
+  if (!value) return "Price on request";
+  const amount = Number(value);
+  return Number.isNaN(amount) ? `NGN ${value}` : `NGN ${amount.toLocaleString()}`;
+}
+
+function productImage(product: Product, fallbackIndex = 0) {
+  return product.image_url || curatedProducts[fallbackIndex % curatedProducts.length].image_url || "/images/belgian-linen-fabric.jpg";
+}
+
 export default function LandingPage() {
   const router = useRouter();
-  const [newArrivals, setNewArrivals] = useState<any[]>([]);
-  const [recommended, setRecommended] = useState<any[]>([]);
-  const [journalPosts, setJournalPosts] = useState<any[]>([]);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [recommended, setRecommended] = useState<Product[]>([]);
+  const [journalPosts, setJournalPosts] = useState<JournalPost[]>([]);
   const [loadingNewArrivals, setLoadingNewArrivals] = useState(true);
   const [index, setIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
   const [showModal, setShowModal] = useState(false);
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
+  const [note, setNote] = useState("");
+  const [sourcingImage, setSourcingImage] = useState<File | null>(null);
+  const [submittingSourcing, setSubmittingSourcing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const displayNewArrivals = useMemo(
+    () => (newArrivals.length ? newArrivals.slice(0, 4) : curatedProducts.slice(0, 4)),
+    [newArrivals]
+  );
+
+  const displayRecommended = useMemo(
+    () => (recommended.length ? recommended.slice(0, 8) : curatedProducts),
+    [recommended]
+  );
+
+  const displayJournal = useMemo(
+    () => (journalPosts.length ? journalPosts.slice(0, 2) : journalFallback),
+    [journalPosts]
+  );
 
   useEffect(() => {
     fetchNewArrivals();
@@ -59,67 +184,25 @@ export default function LandingPage() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % slides.length);
-    }, 5000); // change every 5s
+      setIndex((prev) => (prev + 1) % heroSlides.length);
+    }, 5500);
 
     return () => clearInterval(interval);
   }, []);
 
-  const scroll = (direction: "left" | "right") => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    const scrollAmount = 250;
-
-    container.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
-  };
-
-  const handleFindFabric = async () => {
-    if (!image) {
-      toast.error("Upload a fabric image first");
-      return;
-    }
-
-    // 🔥 TEMP LOGIC (replace with API later)
-    const hasMatch = Math.random() > 0.5;
-
-    if (!hasMatch) {
-      toast.error("No matching fabric found");
-      setShowModal(true);
-    } else {
-      toast.success("Matching fabrics found");
-    }
-  };
-
   const fetchJournalPosts = async () => {
     try {
       const res = await API.get("/journal", { params: { limit: 2 } });
-      setJournalPosts(res.data.posts || []); // adjust based on your API response
+      setJournalPosts(res.data.posts || []);
     } catch (err) {
       console.error("Failed to fetch journal posts", err);
     }
   };
 
-  // Fetch New Arrivals
   const fetchNewArrivals = async () => {
     try {
       setLoadingNewArrivals(true);
-
-      const res = await API.get("/products/new-arrivals", {
-        params: { limit: 4 },
-      });
-
+      const res = await API.get("/products/new-arrivals", { params: { limit: 4 } });
       setNewArrivals(res.data.products || []);
     } catch (err) {
       console.error("Failed to fetch new arrivals", err);
@@ -128,369 +211,496 @@ export default function LandingPage() {
     }
   };
 
-  // Fetch Recommended Products
   const fetchRecommended = async () => {
     try {
-      const res = await API.get("/products", { params: { limit: 6 } });
+      const res = await API.get("/products", { params: { limit: 8 } });
       setRecommended(res.data.products || []);
     } catch (err) {
       console.error("Failed to fetch recommended products", err);
     }
   };
 
-  // Helper to format price safely
-  const formatPrice = (price: number | string) => {
-    if (!price) return "N/A";
-    return typeof price === "number"
-      ? `₦${price.toLocaleString()}`
-      : `₦${price}`;
+  const scroll = (direction: "left" | "right") => {
+    scrollRef.current?.scrollBy({
+      left: direction === "left" ? -320 : 320,
+      behavior: "smooth",
+    });
+  };
+
+  const handlePointerMove = (event: React.MouseEvent<HTMLElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPointer({
+      x: (event.clientX - rect.left) / rect.width - 0.5,
+      y: (event.clientY - rect.top) / rect.height - 0.5,
+    });
   };
 
   return (
-    <main className="bg-background">
-      {/* HEADER */}
-      <header className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between sticky top-0 z-40 bg-background border-b border-neutral-600">
-        <div className="text-2xl font-bold">
-          <Link href="/" className="hover:opacity-80 transition">
-            <Image
-              src="/images/logo1.png"
-              alt="Fabric Logo"
-              width={200}
-              height={10}
-              className="w-15 h-auto h-8 dark:invert"
-            />
+    <main className="min-h-screen bg-[#fbfaf7] text-[#171412] transition-colors dark:bg-neutral-950 dark:text-neutral-100">
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-[#fbfaf7]/92 backdrop-blur-xl transition-colors dark:border-white/10 dark:bg-neutral-950/92">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6">
+          <Link href="/" className="flex items-center">
+            <Image src="/images/logo1.png" alt="KAV Textile" width={180} height={44} className="h-8 w-auto object-contain dark:brightness-0 dark:invert sm:h-9" priority />
           </Link>
-        </div>
 
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.push("/auth/signup")}
-            className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-          >
-            Join Now
-          </button>
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#514942] dark:text-neutral-300 md:flex">
+            {navLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="transition hover:text-[#171412] dark:hover:text-white">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-          <Button
-            onClick={() => router.push("/auth/login")}
-            className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors"
-          >
-            Login
-          </Button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => router.push("/auth/login")}
+              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[#514942] transition hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10 sm:inline-flex"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => router.push("/auth/signup")}
+              className="hidden rounded-full bg-[#171412] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#2a241f] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 sm:inline-flex"
+            >
+              Join Now
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/80 text-[#171412] transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white dark:hover:text-neutral-950 md:hidden"
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X size={18} /> : <Menu size={19} />}
+            </button>
+          </div>
         </div>
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="border-t border-black/10 bg-[#fbfaf7]/98 px-4 py-4 shadow-xl shadow-black/5 dark:border-white/10 dark:bg-neutral-950/98 md:hidden"
+            >
+              <nav className="grid gap-2 text-sm font-semibold text-[#514942] dark:text-neutral-200">
+                {navLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="rounded-2xl border border-black/10 bg-white/75 px-4 py-3 transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-white/8 dark:hover:bg-white dark:hover:text-neutral-950"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/auth/login");
+                  }}
+                  className="rounded-full border border-black/10 px-4 py-3 text-sm font-bold dark:border-white/10"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/auth/signup");
+                  }}
+                  className="rounded-full bg-[#171412] px-4 py-3 text-sm font-bold text-white dark:bg-white dark:text-neutral-950"
+                >
+                  Join Now
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* HERO */}
-      <section className="relative h-[80vh] overflow-hidden">
+      <section
+        onMouseMove={handlePointerMove}
+        className="relative isolate min-h-[calc(100svh-6.6rem)] overflow-hidden bg-[#181512] text-white sm:min-h-[calc(100vh-5rem)]"
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
-            initial={{ x: 200, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -200, opacity: 0 }}
-            transition={{ duration: 0.7 }}
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
             className="absolute inset-0"
           >
-            {/* Background Image */}
-            <img
-              src={slides[index].image}
-              className="absolute inset-0 w-full h-full object-cover"
+            <Image
+              src={heroSlides[index].image}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+              style={{
+                transform: `translate3d(${pointer.x * -18}px, ${pointer.y * -12}px, 0) scale(1.06)`,
+              }}
             />
-
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-black/40" />
-
-            {/* Content */}
-            <div className="relative z-10 max-w-7xl mx-auto h-full flex items-center px-6">
-              <div className="max-w-xl text-left">
-                <h2 className="text-3xl md:text-3xl font-bold tracking-tight mb-4">
-                  {slides[index].title}
-                </h2>
-
-                <p className="text-lg mb-6 text-neutral-700 dark:text-neutral-300">
-                  {slides[index].text}
-                </p>
-
-                <button
-                  onClick={() => router.push("/auth/login")}
-                  className="bg-neutral-900 text-white px-6 py-2 rounded-lg hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black"
-                >
-                  Explore Profile
-                </button>
-              </div>
-            </div>
           </motion.div>
         </AnimatePresence>
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,12,10,0.78),rgba(15,12,10,0.72),rgba(15,12,10,0.56))] sm:bg-[linear-gradient(90deg,rgba(15,12,10,0.92),rgba(15,12,10,0.62),rgba(15,12,10,0.24))]" />
+
+        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-6.6rem)] max-w-7xl items-center gap-10 px-4 py-12 sm:min-h-[calc(100vh-5rem)] sm:px-6 sm:py-14 lg:grid-cols-[1fr_0.85fr]">
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="max-w-3xl">
+            <div className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80 backdrop-blur sm:mb-6 sm:px-4 sm:text-xs sm:tracking-[0.22em]">
+              <Sparkles size={14} />
+              Textile sourcing studio
+            </div>
+            <h1 className="max-w-4xl text-[2.7rem] font-semibold leading-[1.02] tracking-normal text-white sm:text-6xl lg:text-7xl">
+              {heroSlides[index].title}
+            </h1>
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-white/78 sm:mt-6 sm:text-lg sm:leading-8">
+              {heroSlides[index].text}
+            </p>
+            <div className="mt-8 grid gap-3 sm:mt-9 sm:flex sm:flex-row">
+              <button
+                onClick={() => router.push("/auth/signup")}
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-[#171412] transition hover:bg-[#f0e7da]"
+              >
+                Start Sourcing
+                <ArrowRight size={17} />
+              </button>
+              <Link
+                href="/Guest/shop"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              >
+                Explore Fabrics
+              </Link>
+            </div>
+          </motion.div>
+
+          <div className="relative hidden min-h-[560px] perspective-[1200px] lg:block">
+            {curatedProducts.slice(0, 3).map((item, cardIndex) => (
+              <motion.div
+                key={item.id}
+                animate={{ y: [0, cardIndex % 2 ? -16 : 16, 0] }}
+                transition={{ duration: 6 + cardIndex, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute overflow-hidden rounded-[2rem] border border-white/18 bg-white/10 shadow-2xl shadow-black/40 backdrop-blur"
+                style={{
+                  width: cardIndex === 0 ? 260 : 220,
+                  height: cardIndex === 0 ? 360 : 300,
+                  right: cardIndex === 0 ? 120 : cardIndex === 1 ? 0 : 250,
+                  top: cardIndex === 0 ? 60 : cardIndex === 1 ? 190 : 250,
+                  transform: `translate3d(${pointer.x * (cardIndex + 1) * 18}px, ${pointer.y * (cardIndex + 1) * 14}px, 0) rotateY(${pointer.x * 14}deg) rotateX(${pointer.y * -10}deg) rotate(${cardIndex === 1 ? 8 : cardIndex === 2 ? -10 : 0}deg)`,
+                  transformStyle: "preserve-3d",
+                }}
+              >
+                <Image src={item.image_url || ""} alt={item.name} fill sizes="260px" className="object-cover" />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/60">{item.category}</p>
+                  <h3 className="mt-1 font-semibold text-white">{item.name}</h3>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* NEW ARRIVALS */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex justify-between mb-8">
-          <h2 className="text-2xl font-bold">New Arrivals</h2>
-          <Link href="/auth/login" className="text-primary font-semibold">
-            View All →
+      <section className="border-y border-black/10 bg-white transition-colors dark:border-white/10 dark:bg-neutral-900">
+        <div className="mx-auto grid max-w-7xl gap-0 px-4 sm:px-6 md:grid-cols-3">
+          {trustItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="flex items-start gap-4 border-black/10 py-6 md:border-r md:py-7 md:last:border-r-0 dark:border-white/10">
+                <span className="rounded-full bg-[#f3ebe1] p-3 text-[#8e4f25] dark:bg-white/10 dark:text-[#e4b989]">
+                  <Icon size={20} />
+                </span>
+                <div>
+                  <h2 className="font-semibold text-[#171412] dark:text-white">{item.title}</h2>
+                  <p className="mt-1 text-sm leading-6 text-[#70665d] dark:text-neutral-400">{item.text}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section id="new-arrivals" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
+        <div className="mb-9 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[#9c653d] dark:text-[#e4b989]">Fresh yardage</span>
+            <h2 className="mt-3 text-3xl font-semibold tracking-normal sm:text-4xl">New Arrivals</h2>
+          </div>
+          <Link href="/Guest/shop" className="inline-flex items-center gap-2 text-sm font-bold text-[#171412] dark:text-white">
+            View all fabrics
+            <ArrowRight size={16} />
           </Link>
         </div>
 
-        {loadingNewArrivals && (
-          <p className="text-neutral-500">Loading new arrivals...</p>
-        )}
-
-        {!loadingNewArrivals && newArrivals.length === 0 && (
-          <p className="text-neutral-500">No new arrivals yet.</p>
-        )}
-
-        {!loadingNewArrivals && newArrivals.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {newArrivals.map((product) => (
-              <Link key={product.id} href={`/auth/login`}>
-                <div className="group cursor-pointer transition-transform hover:scale-105">
-                  <div className="aspect-[3/4] bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden mb-4">
+        {loadingNewArrivals && !newArrivals.length ? (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="h-[280px] animate-pulse rounded-2xl bg-black/5 dark:bg-white/10 sm:h-[360px]" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            {displayNewArrivals.map((product, itemIndex) => (
+              <Link key={product.id} href="/auth/login" className="group">
+                <article className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-neutral-900 dark:shadow-black/20">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-[#ede6de]">
                     <Image
-                      src={product.image_url || "/images/placeholder.jpg"}
+                      src={productImage(product, itemIndex)}
                       alt={product.name}
-                      width={400}
-                      height={500}
-                      className="object-cover w-full h-full"
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition duration-700 group-hover:scale-105"
                     />
+                    <span className="absolute left-3 top-3 rounded-full bg-white/88 px-3 py-1 text-[11px] font-bold text-[#171412] backdrop-blur sm:left-4 sm:top-4 sm:text-xs">New</span>
                   </div>
-
-                  <h4 className="font-semibold text-sm">{product.name}</h4>
-                  <p className="text-neutral-500 text-sm">
-                    ₦{Number(product.price).toLocaleString()}
-                  </p>
-                </div>
+                  <div className="p-3 sm:p-4">
+                    <h3 className="min-h-10 text-sm font-semibold leading-5 sm:text-base">{product.name}</h3>
+                    <p className="mt-3 text-xs font-bold sm:text-sm">{formatPrice(product.price || product.yard_price)} / yard</p>
+                  </div>
+                </article>
               </Link>
             ))}
           </div>
         )}
       </section>
 
-      {/* FULL WIDTH BANNER */}
-      <section className="max-w-7xl mx-auto px-6 py-20 md:py-24 grid md:grid-cols-2 gap-12 items-center">
-        {/* LEFT SIDE */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="space-y-6"
-        >
-          <span className="text-sm uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-            Smart Tool
-          </span>
-
-          <h2 className="text-3xl md:text-5xl font-semibold text-neutral-900 dark:text-white">
-            Fabric Finder
-          </h2>
-
-          <p className="text-neutral-600 dark:text-neutral-300 max-w-md">
-            Upload a fabric image and we’ll help you find the closest match
-            instantly.
-          </p>
-
-          {/* UPLOAD */}
-          <div className="space-y-4 pt-4">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="w-full px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-transparent file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-neutral-900 file:text-white file:rounded-md"
-            />
-
-            <button
-              onClick={handleFindFabric}
-              className="w-full bg-neutral-900 text-white py-3 rounded-lg hover:bg-neutral-800 dark:bg-white dark:text-black transition"
-            >
-              Find Fabric
-            </button>
-          </div>
-        </motion.div>
-
-        {/* RIGHT SIDE */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="relative h-[320px] md:h-[380px] rounded-2xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-        >
-          {preview ? (
-            <Image src={preview} alt="preview" fill className="object-cover" />
-          ) : (
-            <span className="text-neutral-500 text-sm">
-              Image preview will appear here
-            </span>
-          )}
-
-          {preview && (
-            <div className="absolute bottom-4 left-4 bg-white/80 dark:bg-black/60 px-4 py-2 rounded-lg text-sm">
-              Your Uploaded Fabric
+      <section id="sourcing" className="relative overflow-hidden bg-[#171412] py-14 text-white sm:py-20">
+        <div className="absolute inset-0 opacity-20">
+          <Image src="/images/thread-and-yarn-shelves.jpg" alt="" fill sizes="100vw" className="object-cover" />
+        </div>
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 sm:gap-10 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[#e4b989]">Personal sourcing</span>
+            <h2 className="mt-4 text-3xl font-semibold tracking-normal sm:text-5xl">Need a specific fabric?</h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-white/72 sm:text-base sm:leading-8">
+              Send a simple request and the team can help confirm availability, suggest close alternatives, and guide you toward the right yardage.
+            </p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              {[
+                ["01", "Describe the fabric"],
+                ["02", "Share quantity or use"],
+                ["03", "Get guided options"],
+              ].map(([number, title]) => (
+                <div key={number} className="rounded-2xl border border-white/14 bg-white/10 p-4 backdrop-blur">
+                  <p className="text-xs font-bold text-[#e4b989]">{number}</p>
+                  <p className="mt-3 text-sm font-semibold leading-6">{title}</p>
+                </div>
+              ))}
             </div>
-          )}
-        </motion.div>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={() => setShowModal(true)}
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-[#171412] transition hover:bg-[#f0e7da]"
+              >
+                Request Sourcing
+              </button>
+              <Link
+                href="/Guest/shop"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/24 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              >
+                Browse Available Fabrics
+              </Link>
+            </div>
+          </motion.div>
 
-        {/* MODAL */}
-        {showModal && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-            onClick={() => setShowModal(false)} // click outside closes
+          <motion.div
+            initial={{ opacity: 0, rotateX: 10, y: 35 }}
+            whileInView={{ opacity: 1, rotateX: 0, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative min-h-[360px] overflow-hidden rounded-[1.4rem] border border-white/14 bg-[#241f1b] shadow-2xl sm:min-h-[470px] sm:rounded-[2rem]"
           >
-            <form
-              onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
-              onSubmit={(e) => {
-                e.preventDefault();
-
-                if (!name.trim() || !phone.trim()) {
-                  toast.error("Please fill all fields");
-                  return;
-                }
-
-                // success
-                toast.success("Request submitted successfully!");
-
-                setName("");
-                setPhone("");
-                setShowModal(false);
-              }}
-              className="bg-white dark:bg-neutral-900 p-6 rounded-xl w-full max-w-md space-y-4 relative"
-            >
-              {/* CLOSE BUTTON */}
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="absolute top-3 right-3 text-lg"
-              >
-                ✕
-              </button>
-
-              <h3 className="text-xl font-semibold">Didn’t find a match?</h3>
-
-              <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                Drop your details and we’ll help you source your perfect
-                textile.
-              </p>
-
-              {/* NAME */}
-              <input
-                type="text"
-                placeholder="Your Name"
-                className="w-full px-4 py-3 border rounded-lg"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-
-              {/* PHONE */}
-              <input
-                type="tel"
-                placeholder="WhatsApp Number (e.g. 08012345678)"
-                className="w-full px-4 py-3 border rounded-lg"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-
-              {/* SUBMIT */}
-              <button
-                type="submit"
-                className="w-full bg-black text-white py-3 rounded-lg"
-              >
-                Submit Request
-              </button>
-            </form>
-          </div>
-        )}
+            <Image src="/images/fabric-weaving-process-hands.jpg" alt="Fabric sourcing process" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/18 to-transparent" />
+            <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/16 bg-black/48 p-4 backdrop-blur sm:inset-x-5 sm:bottom-5">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/58">Sourcing support</p>
+              <p className="mt-2 text-lg font-semibold">Human guidance for rare textures, bulk needs, and close alternatives.</p>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-white/72">
+                <span className="rounded-full bg-white/10 px-3 py-2">Texture</span>
+                <span className="rounded-full bg-white/10 px-3 py-2">Color</span>
+                <span className="rounded-full bg-white/10 px-3 py-2">Yardage</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
-      {/* RECOMMENDED PRODUCTS */}
-      <section className="max-w-7xl mx-auto py-16 relative">
-        <div className="px-6 mb-8">
-          <h2 className="text-2xl font-bold">Currently Selling</h2>
+      <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[#9c653d] dark:text-[#e4b989]">In demand</span>
+            <h2 className="mt-3 text-3xl font-semibold tracking-normal sm:text-4xl">Currently Selling</h2>
+          </div>
+          <div className="hidden gap-2 sm:flex">
+            <button onClick={() => scroll("left")} className="rounded-full border border-black/10 bg-white p-3 transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-neutral-900 dark:hover:bg-white dark:hover:text-neutral-950" aria-label="Scroll left">
+              <ChevronLeft size={18} />
+            </button>
+            <button onClick={() => scroll("right")} className="rounded-full border border-black/10 bg-white p-3 transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-neutral-900 dark:hover:bg-white dark:hover:text-neutral-950" aria-label="Scroll right">
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
 
-        {/* LEFT ARROW */}
-        <button
-          onClick={() => scroll("left")}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-black/60 p-2 rounded-full shadow hover:scale-110 transition"
-        >
-          ←
-        </button>
-
-        {/* RIGHT ARROW */}
-        <button
-          onClick={() => scroll("right")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 dark:bg-black/60 p-2 rounded-full shadow hover:scale-110 transition"
-        >
-          →
-        </button>
-
-        <div
-          ref={scrollRef}
-          className="flex gap-6 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scrollbar-hide"
-        >
-          {recommended.map((product) => (
-            <Link key={product.id} href={`/auth/login`}>
-              <div className="snap-start min-w-[220px] flex-shrink-0 transition-transform hover:scale-105">
-                <div className="aspect-square rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-800 mb-4">
-                  <Image
-                    src={product.image_url || "/images/placeholder.jpg"}
-                    alt={product.name}
-                    width={300}
-                    height={300}
-                    className="object-cover w-full h-full"
-                  />
+        <div ref={scrollRef} className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide sm:gap-5">
+          {displayRecommended.map((product, itemIndex) => (
+            <Link key={product.id} href="/auth/login" className="group min-w-[72vw] snap-start sm:min-w-[240px]">
+              <article className="relative overflow-hidden rounded-2xl bg-[#ede6de] dark:bg-neutral-900">
+                <div className="relative aspect-square overflow-hidden">
+                  <Image src={productImage(product, itemIndex)} alt={product.name} fill sizes="260px" className="object-cover transition duration-700 group-hover:scale-105" />
                 </div>
-
-                <div className="text-center">
-                  <h4 className="font-semibold text-sm">{product.name}</h4>
-                  <p className="text-primary font-bold">
-                    ₦{Number(product.yard_price).toLocaleString()}
-                  </p>
+                <div className="bg-white p-4 dark:bg-neutral-900">
+                  <h3 className="font-semibold">{product.name}</h3>
+                  <p className="mt-3 text-sm font-bold">{formatPrice(product.price || product.yard_price)} / yard</p>
                 </div>
-              </div>
+              </article>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* JOURNAL */}
-      <section className="max-w-7xl mx-auto px-6 pb-20">
-        <h2 className="text-2xl font-bold mb-8">Trending in the Journal</h2>
-
-        <div className="grid md:grid-cols-2 gap-10">
-          {journalPosts.map((post) => (
-            <article key={post.id} className="space-y-4">
-              <Link href={`/auth/login`}>
-                <div className="aspect-video rounded-xl overflow-hidden bg-neutral-200 cursor-pointer">
-                  <Image
-                    src={post.image || "/images/placeholder.jpg"}
-                    alt={post.title}
-                    width={600}
-                    height={400}
-                    className="object-cover w-full h-full"
-                  />
+      <section id="journal" className="bg-white py-14 transition-colors dark:bg-neutral-900 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="mb-9 max-w-2xl">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-[#9c653d] dark:text-[#e4b989]">Journal</span>
+            <h2 className="mt-3 text-3xl font-semibold tracking-normal sm:text-4xl">Material notes and styling ideas</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            {displayJournal.map((post) => (
+              <article key={post.id} className="group grid overflow-hidden rounded-2xl border border-black/10 bg-[#fbfaf7] shadow-sm dark:border-white/10 dark:bg-neutral-950 md:grid-cols-[0.9fr_1fr]">
+                <Link href="/auth/login" className="relative min-h-[220px] overflow-hidden sm:min-h-[260px]">
+                  <Image src={post.image || "/images/designer-woman-working.jpg"} alt={post.title} fill sizes="(min-width: 768px) 35vw, 100vw" className="object-cover transition duration-700 group-hover:scale-105" />
+                </Link>
+                <div className="p-5 sm:p-6">
+                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#9c653d] dark:text-[#e4b989]">{post.category || "Style Report"}</span>
+                  <h3 className="mt-4 text-xl font-semibold leading-tight sm:text-2xl">{post.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-[#70665d] dark:text-neutral-400 sm:text-base">{post.excerpt || "Read our latest fabric insights and sourcing notes."}</p>
+                  <Link href="/auth/login" className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
+                    Read More
+                    <ArrowRight size={16} />
+                  </Link>
                 </div>
-              </Link>
-
-              <span className="text-xs uppercase text-primary font-bold tracking-widest">
-                {post.category || "Style Report"}
-              </span>
-
-              <h3 className="text-xl font-bold">{post.title}</h3>
-
-              <p className="text-neutral-500">
-                {post.excerpt ||
-                  "Read our latest fashion insights and style tips."}
-              </p>
-
-              <Link
-                href={`/auth/login`}
-                className="font-semibold border-b border-black dark:border-white"
-              >
-                Read More
-              </Link>
-            </article>
-          ))}
+              </article>
+            ))}
+          </div>
         </div>
       </section>
+
+      <footer className="bg-[#171412] text-white">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
+          <div>
+            <Image src="/images/logo1.png" alt="KAV Textile" width={170} height={44} className="h-9 w-auto object-contain brightness-0 invert" />
+            <p className="mt-5 max-w-md leading-7 text-white/64">
+              Quality fabrics for designers, makers, decorators, and fabric lovers who care about finish, feel, and detail.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold">Explore</h3>
+            <div className="mt-4 grid gap-3 text-sm text-white/64">
+              <Link href="/Guest/shop" className="hover:text-white">Shop fabrics</Link>
+              <Link href="/Guest/About" className="hover:text-white">About</Link>
+            </div>
+          </div>
+          <div>
+            <h3 className="font-semibold">Support</h3>
+            <div className="mt-4 grid gap-3 text-sm text-white/64">
+              <Link href="/user/shipping-info" className="hover:text-white">Shipping info</Link>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {showModal && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 px-4" onClick={() => setShowModal(false)}>
+          <form
+            onClick={(event) => event.stopPropagation()}
+            onSubmit={async (event) => {
+              event.preventDefault();
+              if (!name.trim() || !phone.trim()) {
+                toast.error("Please enter your name and WhatsApp number");
+                return;
+              }
+
+              try {
+                setSubmittingSourcing(true);
+                const formData = new FormData();
+                formData.append("name", name.trim());
+                formData.append("whatsapp", phone.trim());
+                if (note.trim()) formData.append("note", note.trim());
+                if (sourcingImage) formData.append("image", sourcingImage);
+
+                await API.post("/sourcing-requests", formData, {
+                  headers: { "Content-Type": "multipart/form-data" },
+                });
+
+                toast.success("Request submitted successfully");
+                setName("");
+                setPhone("");
+                setNote("");
+                setSourcingImage(null);
+                setShowModal(false);
+              } catch (err) {
+                console.error("Failed to submit sourcing request", err);
+                toast.error("Could not submit your request. Please try again.");
+              } finally {
+                setSubmittingSourcing(false);
+              }
+            }}
+            className="relative w-full max-w-md rounded-2xl bg-white p-5 text-[#171412] shadow-2xl dark:bg-neutral-950 dark:text-white sm:p-6"
+          >
+            <button type="button" onClick={() => setShowModal(false)} className="absolute right-4 top-4 rounded-full p-2 hover:bg-black/5" aria-label="Close request form">
+              <X size={18} />
+            </button>
+            <h3 className="pr-10 text-2xl font-semibold">Request custom sourcing</h3>
+            <p className="mt-3 text-sm leading-6 text-[#70665d] dark:text-neutral-400">
+              Leave your details and the team will help source the fabric or recommend the closest available option.
+            </p>
+            <div className="mt-6 space-y-3">
+              <input
+                type="text"
+                placeholder="Your name"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[#171412] outline-none transition focus:border-[#9c653d] dark:border-white/10 dark:bg-neutral-900 dark:text-white"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+              <input
+                type="tel"
+                placeholder="WhatsApp number"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-[#171412] outline-none transition focus:border-[#9c653d] dark:border-white/10 dark:bg-neutral-900 dark:text-white"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+              />
+              <textarea
+                placeholder="What fabric are you looking for? Color, texture, quantity, or deadline"
+                rows={4}
+                className="w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-3 text-[#171412] outline-none transition focus:border-[#9c653d] dark:border-white/10 dark:bg-neutral-900 dark:text-white"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+              />
+              <label className="block rounded-xl border border-dashed border-black/20 bg-black/[0.02] px-4 py-3 text-sm text-[#70665d] transition hover:border-[#9c653d] dark:border-white/15 dark:bg-white/5 dark:text-neutral-300">
+                <span className="font-semibold text-[#171412] dark:text-white">Upload reference image</span>
+                <span className="mt-1 block text-xs">{sourcingImage ? sourcingImage.name : "Optional JPG, PNG, or WEBP sample"}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={(event) => setSourcingImage(event.target.files?.[0] || null)}
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={submittingSourcing}
+                className="w-full rounded-full bg-[#171412] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#2a241f] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
+              >
+                {submittingSourcing ? "Submitting..." : "Submit Request"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </main>
   );
 }

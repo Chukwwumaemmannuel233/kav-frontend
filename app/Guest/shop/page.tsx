@@ -1,255 +1,298 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { ChevronDown } from "lucide-react"
-import SiteHeader from "../../components/site-header"
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowRight,
+  Menu,
+  Search,
+  ShieldCheck,
+  X,
+} from "lucide-react";
+import API from "@/lib/api";
 
-interface Fabric {
-  id: number
-  name: string
-  price: number
-  material: string
-  color: string
-  image: string
-}
+type Product = {
+  id: number | string;
+  name: string;
+  price?: number | string;
+  yard_price?: number | string;
+  image_url?: string;
+  category?: string;
+  material?: string;
+  color?: string;
+  description?: string;
+};
 
-const allFabrics: Fabric[] = [
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/Guest/shop" },
+  { label: "About", href: "/Guest/About" },
+];
+
+const fallbackProducts: Product[] = [
   {
-    id: 1,
-    name: "Linen Blend - Natural",
-    price: 15,
+    id: "fallback-linen",
+    name: "Belgian Linen",
+    price: 18500,
+    yard_price: 18500,
+    category: "Linen",
     material: "Linen",
     color: "Natural",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAA3B_SadHV27p74Ozd9EWLtej1bCrh0ortAORekJqazr-VhbiJqYWfTzy_Kw6RbAJ1mwqUWf6m98M5F53Pogu_AvviAqn56JP4GSzk4cciSajABvxXAXrcTPI7THZ1vWvfRPTWk0N7zj_FDB8S76rwOdkLXodlt7IZ1vBDFjtimjPXb0pRkpcJkSC3rZQMWPlVpnNiIYg2LFj-IpjWKSzcPIdKVE99xcuY5oaPzwhBMf2oSZcAGl786i77FHv_LXv_IBLOa7f7Az4A",
+    image_url: "/images/belgian-linen-fabric.jpg",
   },
   {
-    id: 2,
-    name: "Cotton Jersey - Black",
-    price: 12,
-    material: "Cotton",
-    color: "Black",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAMhgNUo5fY_mpel0s-mEkyNdndD0pWvumUnfYFC6fC2qKYpqYtcmABA6wqBFGFK9Q2VFzeWc_XMI1OlZ-vye9vxBi3SkgZi5H-s1_OeQZrFnPHq7fakWKeaTMJ5OFX9s5V6hvD3J3_PFmRPgt0mJDXKE5TyPPf1YyBvIhCJUSBAvc2NZLm2m91MlNvLFtRAHrveoMytb5pbaRTJvIJmFvvPWgADJ6mOZTPgkq1e-BxMqr1cwBK8cyO4n5Gr9AtRT6pOlSet630IRNu",
-  },
-  {
-    id: 3,
-    name: "Silk Charmeuse - Ivory",
-    price: 25,
+    id: "fallback-silk",
+    name: "Ivory Silk Charmeuse",
+    price: 32000,
+    yard_price: 32000,
+    category: "Silk",
     material: "Silk",
     color: "Ivory",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCBQQhL7iWY1VVELRVltrz0D5e7nXW-GldSf8QOZ72boeYGb-r2wttgRAfcUtSTBPtFZt0XMo7-mr3Wev0wYyx5kQIuXihqZQBlH4aAm4YqCYkEEnFZcGCw6LQN-f6niiLDIiUZ7HM-hTWwg4bL6C_4S0Pp8lLPWxjR0NRZwBrWbs1NGSXWqXMR-myiZue7qErFM26LVIU3YWGWCcAJbs2U1Xb2M9ldoKW5vI3MkpDC-XIUGPFG1MwiPUmpOuDVz8wmuWz2IbIwowFn",
+    image_url: "/images/ivory-silk-charmeuse-fabric.jpg",
   },
   {
-    id: 4,
-    name: "Wool Tweed - Heather Grey",
-    price: 22,
-    material: "Wool",
-    color: "Grey",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCO4hO9mmEszO5PqP07kk1XaB_AQQ84R-RmAr_44MeT5llW6yC46kiLfTpBeXzcAKykrAully_57fc_K-u92dYysMy6Uu6rzXs78JqJ9ieUywu9UtTo3P7GDb8ORaFrs-e3jC7xJgoG4lU3G_e1ugW01Qc__tquTsOO5j0UXDyPfrnyeTWNQWhpb1NLsh4wlJPkyfV3p2fartTZsZjvYdhmnd47LAQ6aLdhFb4-l-pAJpSCg5S1YDV9ubc8vcHTbwmA8-zcPgTBKDO8",
+    id: "fallback-twill",
+    name: "Tencel Twill",
+    price: 16500,
+    yard_price: 16500,
+    category: "Twill",
+    material: "Tencel",
+    color: "Slate",
+    image_url: "/images/tencel-twill-fabric.jpg",
   },
   {
-    id: 5,
-    name: "Organic Cotton Poplin - White",
-    price: 14,
-    material: "Cotton",
-    color: "White",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAYmgdJro5Og426vKHoh9HdMb9HPJAUb6eafLTlAKT9ALyvJCVCD1jPLX-yWhBlTIGK7SBaucfhzJd8R74-hKuSZ_TgkvYH6EVUZ8ZlyswAZ4g5gjtAMMI9gJAg4zCCV0ohCo8jVOayC_S_NC1Jb5ExhKhQGuig995UqffyqBfGH0Vr5V9quwLv4-TMfJvuXJZBtnlMk05-2KRE3FWP5yu7AucESxWefqKePHC1UAuQyfRxFOf05ExS0QS9gJsr-BACmRipVtL1gY4B",
-  },
-  {
-    id: 6,
-    name: "Bamboo Rayon - Dusty Rose",
-    price: 16,
-    material: "Bamboo",
-    color: "Rose",
-    image: "/images/dusty-rose-bamboo-rayon-fabric.jpg",
-  },
-  {
-    id: 7,
-    name: "Hemp Canvas - Olive Green",
-    price: 18,
-    material: "Hemp",
-    color: "Green",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDCf2pe8BFk5rdm3XZQBWFedmR9xhgaqbGKCXhzILHrqC-crOiyGPAWB1j_0uDcBF4_JX9LghlEvL6TaQA5E5MEJMs219n0IdGVp9JuLKhjt6DprqoceKUDitmifMafSEsuOBF4p4wRvnCB_-0DROgH0X4UhqJZmiD1FkPsa7AXMNN_HEbbMNI4X1TZwnv7SJrrfC6GXWMhWeVgzqLo1-rttXwodAE_kOCwCYwCC1Cft9xYKrNXUkEj9fk3WLpG2sGel0BbHy-avOgP",
-  },
-  {
-    id: 8,
-    name: "Velvet - Deep Navy",
-    price: 20,
+    id: "fallback-velvet",
+    name: "Deep Navy Velvet",
+    price: 24500,
+    yard_price: 24500,
+    category: "Velvet",
     material: "Velvet",
     color: "Navy",
-    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAgJtfEeoA6TFNGpKQ6o0YL1EguaYpZqhUC2BkAeDhM2q-v1EpMXiXP0UIlhGw2knJVyju8ToK6s2ljk-PEocTY0YfrjoSStOp8nenXzaL34U3Rz7J_vGCk4gBm1d7JJvRKeO71ewLL--4ydW2ZPdprOw4LpuZEWZh3KNJ5EP0ItnizbjTrDd1-VuLQ0tzLnO1_FvNRQ24FumfXT8wFhj9xSCwCycR_FTqulDThd3gahZh8gLWa5wsmaRtAOwcRsYpwTWJEb8LgG48D",
+    image_url: "/images/deep-navy-velvet-fabric.jpg",
   },
   {
-    id: 9,
-    name: "Linen Blend - Sage",
-    price: 15,
-    material: "Linen",
-    color: "Sage",
-    image: "/images/sage-linen-blend-fabric.jpg",
+    id: "fallback-hemp",
+    name: "Olive Hemp Canvas",
+    price: 14500,
+    yard_price: 14500,
+    category: "Canvas",
+    material: "Hemp",
+    color: "Olive",
+    image_url: "/images/olive-green-hemp-canvas-fabric.jpg",
   },
   {
-    id: 10,
-    name: "Cotton Sateen - Cream",
-    price: 13,
-    material: "Cotton",
-    color: "Cream",
-    image: "/images/cream-cotton-sateen-fabric.jpg",
-  },
-  {
-    id: 11,
-    name: "Silk Dupioni - Blush",
-    price: 28,
-    material: "Silk",
-    color: "Blush",
-    image: "/images/blush-silk-dupioni-fabric.jpg",
-  },
-  {
-    id: 12,
-    name: "Wool Felt - Charcoal",
-    price: 24,
+    id: "fallback-wool",
+    name: "Heather Grey Wool Tweed",
+    price: 27000,
+    yard_price: 27000,
+    category: "Wool",
     material: "Wool",
-    color: "Charcoal",
-    image: "/images/charcoal-wool-felt-fabric.jpg",
+    color: "Grey",
+    image_url: "/images/heather-grey-wool-tweed-fabric.jpg",
   },
-]
+];
 
-export default function Shop() {
-  const [sortBy, setSortBy] = useState("newest")
-  const [filterMaterial, setFilterMaterial] = useState("all")
-  const [filterColor, setFilterColor] = useState("all")
-  const [itemsToShow, setItemsToShow] = useState(8)
+function formatPrice(value?: number | string) {
+  if (!value) return "Price on request";
+  const amount = Number(value);
+  return Number.isNaN(amount) ? `NGN ${value}` : `NGN ${amount.toLocaleString()}`;
+}
 
-  const filteredFabrics = allFabrics
-    .filter((fabric) => filterMaterial === "all" || fabric.material.toLowerCase() === filterMaterial.toLowerCase())
-    .filter((fabric) => filterColor === "all" || fabric.color.toLowerCase() === filterColor.toLowerCase())
-    .sort((a, b) => {
-      if (sortBy === "newest") return b.id - a.id
-      if (sortBy === "price-low") return a.price - b.price
-      if (sortBy === "price-high") return b.price - a.price
-      return 0
-    })
+function productImage(product: Product, index: number) {
+  return product.image_url || fallbackProducts[index % fallbackProducts.length].image_url || "/images/belgian-linen-fabric.jpg";
+}
 
-  const displayedFabrics = filteredFabrics.slice(0, itemsToShow)
-  const hasMoreFabrics = itemsToShow < filteredFabrics.length
+export default function GuestShop() {
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [visibleCount, setVisibleCount] = useState(12);
 
-  const materials = ["Linen", "Cotton", "Silk", "Wool", "Bamboo", "Hemp", "Velvet"]
-  const colors = [
-    "Natural",
-    "Black",
-    "Ivory",
-    "Grey",
-    "White",
-    "Rose",
-    "Green",
-    "Navy",
-    "Sage",
-    "Cream",
-    "Blush",
-    "Charcoal",
-  ]
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/products", { params: { limit: 60 } });
+      setProducts(res.data.products || []);
+    } catch (err) {
+      console.error("Failed to fetch guest products", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const displayProducts = products.length ? products : fallbackProducts;
+
+  const filteredProducts = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    return [...displayProducts]
+      .filter(
+        (product) =>
+          !query ||
+          product.name?.toLowerCase().includes(query) ||
+          product.category?.toLowerCase().includes(query) ||
+          product.material?.toLowerCase().includes(query) ||
+          product.color?.toLowerCase().includes(query)
+      )
+      .sort((a, b) => String(b.id).localeCompare(String(a.id), undefined, { numeric: true }));
+  }, [displayProducts, searchTerm]);
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredProducts.length;
+
+  const resetSearch = () => {
+    setSearchTerm("");
+    setVisibleCount(12);
+  };
 
   return (
-    <main className="bg-white">
-      <SiteHeader />
+    <main className="min-h-screen bg-[#fbfaf7] text-[#171412] transition-colors dark:bg-neutral-950 dark:text-neutral-100">
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-[#fbfaf7]/92 backdrop-blur-xl dark:border-white/10 dark:bg-neutral-950/92">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6">
+          <Link href="/" className="flex items-center">
+            <Image src="/images/logo1.png" alt="KAV Textile" width={180} height={44} className="h-8 w-auto object-contain dark:brightness-0 dark:invert sm:h-9" priority />
+          </Link>
 
-      <section className="px-6 md:px-16 py-12">
-        <h1 className="text-5xl md:text-6xl font-bold mb-8">All Fabrics</h1>
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#514942] dark:text-neutral-300 md:flex">
+            {navLinks.map((item) => (
+              <Link key={item.href} href={item.href} className="transition hover:text-[#171412] dark:hover:text-white">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-12">
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none bg-neutral-100 px-6 py-3 rounded-full text-sm font-medium cursor-pointer pr-10"
-            >
-              <option value="newest">Sort by: Newest</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          <div className="relative">
-            <select
-              value={filterMaterial}
-              onChange={(e) => setFilterMaterial(e.target.value)}
-              className="appearance-none bg-neutral-100 px-6 py-3 rounded-full text-sm font-medium cursor-pointer pr-10"
-            >
-              <option value="all">Material</option>
-              {materials.map((material) => (
-                <option key={material} value={material.toLowerCase()}>
-                  {material}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          <div className="relative">
-            <select
-              value={filterColor}
-              onChange={(e) => setFilterColor(e.target.value)}
-              className="appearance-none bg-neutral-100 px-6 py-3 rounded-full text-sm font-medium cursor-pointer pr-10"
-            >
-              <option value="all">Color</option>
-              {colors.map((color) => (
-                <option key={color} value={color.toLowerCase()}>
-                  {color}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {displayedFabrics.map((fabric) => (
-            <div key={fabric.id} className="group cursor-pointer">
-              <div className="bg-neutral-100 rounded-lg overflow-hidden mb-4 h-64">
-                <img
-                  src={fabric.image || "/placeholder.svg"}
-                  alt={fabric.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                />
-              </div>
-              <h3 className="font-semibold text-lg mb-1">{fabric.name}</h3>
-              <p className="text-neutral-600 text-sm">${fabric.price.toFixed(2)} / yard</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Load More Button */}
-        {hasMoreFabrics && (
-          <div className="flex justify-center mb-12">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setItemsToShow(itemsToShow + 4)}
-              className="bg-neutral-200 hover:bg-neutral-300 transition px-8 py-3 rounded-full font-medium"
+              onClick={() => router.push("/auth/login")}
+              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[#514942] transition hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10 sm:inline-flex"
             >
-              Load More
+              Login
+            </button>
+            <button
+              onClick={() => router.push("/auth/signup")}
+              className="hidden rounded-full bg-[#171412] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2a241f] dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 sm:inline-flex"
+            >
+              Join Now
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/80 transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white dark:hover:text-neutral-950 md:hidden"
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <X size={18} /> : <Menu size={19} />}
+            </button>
+          </div>
+        </div>
+
+        {menuOpen && (
+          <div className="border-t border-black/10 bg-[#fbfaf7]/98 px-4 py-4 shadow-xl shadow-black/5 dark:border-white/10 dark:bg-neutral-950/98 md:hidden">
+            <nav className="grid gap-2 text-sm font-semibold text-[#514942] dark:text-neutral-200">
+              {navLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-2xl border border-black/10 bg-white/75 px-4 py-3 transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-white/8 dark:hover:bg-white dark:hover:text-neutral-950"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button onClick={() => router.push("/auth/login")} className="rounded-full border border-black/10 px-4 py-3 text-sm font-bold dark:border-white/10">
+                Login
+              </button>
+              <button onClick={() => router.push("/auth/signup")} className="rounded-full bg-[#171412] px-4 py-3 text-sm font-bold text-white dark:bg-white dark:text-neutral-950">
+                Join Now
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-semibold sm:text-3xl">Fabrics</h1>
+          <label className="flex h-11 w-[180px] items-center gap-2 rounded-full border border-black/10 bg-white px-4 dark:border-white/10 dark:bg-neutral-900 sm:w-[260px]">
+            <Search size={16} className="shrink-0 text-[#9c653d] dark:text-[#e4b989]" />
+            <input
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setVisibleCount(12);
+              }}
+              placeholder="Search"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#8d8379] dark:placeholder:text-neutral-500"
+            />
+          </label>
+        </div>
+
+        {loading && !products.length ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="h-[280px] animate-pulse rounded-2xl bg-black/5 dark:bg-white/10 sm:h-[360px]" />
+            ))}
+          </div>
+        ) : visibleProducts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            {visibleProducts.map((product, index) => (
+              <Link key={product.id} href="/auth/login" className="group">
+                <article className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/10 dark:bg-neutral-900">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-[#ede6de] dark:bg-neutral-800">
+                    <Image
+                      src={productImage(product, index)}
+                      alt={product.name}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 50vw"
+                      className="object-cover transition duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-3 sm:p-4">
+                    <h3 className="min-h-10 text-sm font-semibold leading-5 sm:text-base">{product.name}</h3>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <p className="text-xs font-bold sm:text-sm">{formatPrice(product.price || product.yard_price)} / yard</p>
+                      <ArrowRight size={15} className="opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100" />
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-black/10 bg-white p-8 text-center dark:border-white/10 dark:bg-neutral-900">
+            <ShieldCheck className="mx-auto text-[#9c653d] dark:text-[#e4b989]" size={30} />
+            <h3 className="mt-4 text-xl font-semibold">No fabrics found</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#70665d] dark:text-neutral-400">
+              Try another search.
+            </p>
+            <button onClick={resetSearch} className="mt-5 rounded-full bg-[#171412] px-5 py-3 text-sm font-bold text-white dark:bg-white dark:text-neutral-950">
+              Clear search
+            </button>
+          </div>
+        )}
+
+        {hasMore && (
+          <div className="mt-10 flex justify-center">
+            <button
+              onClick={() => setVisibleCount((count) => count + 8)}
+              className="rounded-full border border-black/10 bg-white px-8 py-3 text-sm font-bold transition hover:bg-black hover:text-white dark:border-white/10 dark:bg-neutral-900 dark:hover:bg-white dark:hover:text-neutral-950"
+            >
+              Load more fabrics
             </button>
           </div>
         )}
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-neutral-200 px-6 md:px-16 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-neutral-600">
-          <p>© 2025 Textile Co. All Rights Reserved.</p>
-          <div className="flex gap-8">
-            <Link href="/faq" className="hover:text-neutral-900 transition">
-              FAQs
-            </Link>
-            <Link href="/shipping-info" className="hover:text-neutral-900 transition">
-              Shipping Info
-            </Link>
-            <Link href="#" className="hover:text-neutral-900 transition">
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </footer>
     </main>
-  )
+  );
 }

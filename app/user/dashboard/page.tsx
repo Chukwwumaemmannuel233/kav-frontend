@@ -131,40 +131,6 @@ export default function Dashboard() {
       .finally(() => setLoadingJournal(false));
   }, []);
 
-  // const recommendedProducts: RecommendedProduct[] = [
-  //   {
-  //     id: 1,
-  //     title: "The Classic Denim Jacket",
-  //     description: "Because you loved our City Trousers",
-  //     image:
-  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuB0WtMYyK6O6yFRCtHnG7ZCgftY4QeJw3_DNMmA-W6TZAcdtnwo4Cd6J2qhSPAA-v_WaaeDNAe6_-UhHtpxLgcr0BhKTbMuSLmU2-grx9nrsdtI3IC0tGJfFGqdnI4K46Ew_SpoP0sSqv1W_rN8eCSDFJTeXpJT1tK_wQBE_kh5JqBdAWOWNcL3kCIwYFzvbJ6iOojwPlr58jausx8oWg_LJajxQCmNjOs5BwwWPh2GpWMv2SJA3PBnnwgM3VCvtI4Vb26EvjYD7857",
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Washed Silk Blouse",
-  //     description: "A perfect match for linen",
-  //     image:
-  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuBFH29jb3fV2Uoql9tQZTeojyHoikzbS_StjvM-C38y5418j2AnJMrHqqyKvH5l3rzV-kctycdgCmlYDu-Xkbl5x-6jQw6AJnGvXsNLlEQUJwVYOQ-meWiEAB07xSR8J3doVq8czG2G9WLp_AyN0SOc01O39Jz2kOQnNWrdyNd5BOS86DESP8BycNKO5FQ-C6TUbKCcHc-QxLfBF7BfHOPQUAlSXdrLhdbNZUYcswWcjG2KaUlQ1SZGveGO01ha0P5PA6-o5HVkyblR",
-  //   },
-  // ];
-
-  // const journalPosts: JournalPost[] = [
-  //   {
-  //     id: 1,
-  //     category: "Style Guide",
-  //     title: "The Art of Layering: A Guide to Transitional Weather",
-  //     image:
-  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuDbXxUfuBw4DpFY0vGuflMCgYsNTy6wzjTv2r630c48fAeUpwfhi9TXBkY8xH8-_G2ZUd0SfnQswmncbFZu6yymOkk1uTwf0vrC4mHzR0gIrV5v9lFnzIIlVuoBxr3j3aYG-Fn9mEKjxVo9w46IQsNpMwtBa_Zpb32PjxxV1yAAHiPA4frW47ZvfVJ6G1WaJoCbIY2JdK8RWyYxGCHSepRl0ydt2cEFYP3Yu6wBJPl8q8MzRFfvfRxRcjw-FRAiV6ct31lczAORaybD",
-  //   },
-  //   {
-  //     id: 2,
-  //     category: "Fabric Care",
-  //     title: "How to Care For Your Merino Wool Pieces",
-  //     image:
-  //       "https://lh3.googleusercontent.com/aida-public/AB6AXuCsYL-WL36HTht-0VXZfdTDhg-zHktQ6pgUMRxXO2M9_0iGcnvn-c9Rdnd7aYvgScbPkqW5AyHMWiqJgk_hiRBYBi45-IUXCgrFtLRXRNMnd-hLAPlm5VBi_e_VS1uy1O_7s5CF91sKgu4SRf-Ttjxcpn5IncFYY6uMKn_tnXqNsAQ1OtpqpKoiFFfdvaWhv3aHDL3WJSyF_-bjOoPt7ZmTPEoj9d50iTFXnh_mldAff9I56qihAYsCTZNQAiX7y2Eny_0swwzsLhZk",
-  //   },
-  // ];
-
   const [loadingFavIds, setLoadingFavIds] = useState<number[]>([]);
 
   const fetchFavorites = async () => {
@@ -213,17 +179,14 @@ export default function Dashboard() {
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="mb-12 md:mb-16">
             <div className="bg-neutral-100 dark:bg-neutral-800 rounded-xl p-6 sm:p-8 lg:p-12 w-full border border-neutral-200 dark:border-neutral-700">
-              {/* Label */}
               <p className="text-xs font-semibold tracking-widest text-blue-600 uppercase mb-3">
                 Member Exclusive
               </p>
 
-              {/* Heading */}
               <h1 className="text-2xl font-bold leading-tight text-neutral-900 dark:text-white sm:text-3xl lg:text-4xl xl:text-2xl">
                 Welcome Back{userName ? `, ${userName}` : ""}
               </h1>
 
-              {/* Description */}
               <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-400 sm:text-base lg:text-lg leading-relaxed max-w-2xl">
                 Discover your curated style for today. Explore the latest
                 additions to your favorite designers.
@@ -232,7 +195,6 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-16">
-            {/* New Arrivals Section */}
             <section>
               <div className="flex items-center justify-between gap-4 mb-6">
                 <h2 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
@@ -241,7 +203,7 @@ export default function Dashboard() {
                 <div className="flex items-center gap-3">
                   {navigating && (
                     <span className="text-sm text-neutral-500 animate-pulse">
-                      Loading…
+                      Loading...
                     </span>
                   )}
 
@@ -264,7 +226,6 @@ export default function Dashboard() {
                 {newArrivals.map((product) => (
                   <div key={product.id} className="group relative">
                     <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-neutral-200 relative">
-                      {/* ❤️ FAVORITE */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -293,7 +254,6 @@ export default function Dashboard() {
                         />
                       </Link>
 
-                      {/* NEW badge */}
                       <span className="absolute top-3 left-3 text-xs px-2 py-1 rounded">
                         NEW
                       </span>
@@ -310,7 +270,6 @@ export default function Dashboard() {
               </div>
             </section>
 
-            {/* Featured Lookbook Section */}
             <section>
               {loadingLookbook && (
                 <div className="aspect-[16/9] rounded-lg bg-neutral-200 animate-pulse" />
@@ -337,10 +296,8 @@ export default function Dashboard() {
                       ))}
                     </div>
 
-                    {/* Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-                    {/* Text */}
                     <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-8 z-10">
                       <p className="text-sm uppercase tracking-widest">
                         Featured Lookbook
@@ -365,9 +322,7 @@ export default function Dashboard() {
               )}
             </section>
 
-            {/* Just For You Section */}
             <section className="mt-12">
-              {/* Title */}
               <div className="mb-6">
                 <h2 className="text-2xl font-bold sm:text-3xl">Just For You</h2>
                 <p className="text-sm text-neutral-500">
@@ -375,9 +330,8 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              {/* Products Scroll */}
               <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                {loadingRecommendations && <p>Loading recommendations…</p>}
+                {loadingRecommendations && <p>Loading recommendations...</p>}
 
                 {!loadingRecommendations && recommendations.length === 0 && (
                   <p className="text-neutral-500">
@@ -393,7 +347,6 @@ export default function Dashboard() {
         bg-neutral-100 dark:bg-neutral-800 p-4
         hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
                   >
-                    {/* Image */}
                     <div className="aspect-square w-16 flex-shrink-0 overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-700">
                       <img
                         src={product.image_url || "/placeholder.svg"}
@@ -402,7 +355,6 @@ export default function Dashboard() {
                       />
                     </div>
 
-                    {/* Info */}
                     <div>
                       <h3 className="text-sm font-medium leading-tight group-hover:underline">
                         {product.name}
@@ -417,7 +369,6 @@ export default function Dashboard() {
               </div>
             </section>
 
-            {/* From the Journal Section */}
             <section>
               <div className="flex items-center justify-between gap-4 mb-6">
                 <h2 className="text-2xl font-bold leading-tight tracking-tight sm:text-2xl">

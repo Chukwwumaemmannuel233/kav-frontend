@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Plus, ArrowRight } from "lucide-react";
+import { Plus, ArrowRight, Search } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import API from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [isOrders, setOrders] = useState(false);
   const [isNewProduct, setNewProduct] = useState(false);
   const [isMessages, setMessages] = useState(false);
+  const [isSourcing, setSourcing] = useState(false);
   const [stats, setStats] = useState({
     totalOrders: 0,
     pendingOrders: 0,
@@ -108,6 +109,15 @@ export default function AdminDashboard() {
 
     // Redirect after login
     router.push("/admin/messages");
+  };
+
+  const SourcingRequests = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSourcing(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    router.push("/admin/sourcing-requests");
   };
 
   return (
@@ -261,6 +271,24 @@ export default function AdminDashboard() {
               >
                 <span className="font-medium">View Messages</span>
                 <ArrowRight size={20} />
+              </Button>
+
+              <Button
+                onClick={SourcingRequests}
+                isLoading={isSourcing}
+                loadingText="Redirecting..."
+                className="
+                    w-full 
+                    bg-neutral-100 text-neutral-900 
+                    dark:bg-neutral-800 dark:text-neutral-100
+                    border border-neutral-200 dark:border-neutral-700
+                    hover:bg-neutral-200 dark:hover:bg-neutral-700
+                    flex justify-between items-center
+                    transition
+                  "
+              >
+                <span className="font-medium">Sourcing Requests</span>
+                <Search size={20} />
               </Button>
             </div>
           </div>
